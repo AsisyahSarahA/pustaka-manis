@@ -109,6 +109,18 @@ class MemberController extends Controller
         return view('members.card-print', compact('member'));
     }
 
+    public function printAllCards(): View
+    {
+        $members = Member::query()
+            ->when(request()->filled('type'), fn ($q) => $q->where('type', request('type')))
+            ->where('is_active', true)
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get();
+
+        return view('members.cards-print', compact('members'));
+    }
+
     private function validateData(Request $request, ?int $ignoreId = null): array
     {
         return $request->validate([

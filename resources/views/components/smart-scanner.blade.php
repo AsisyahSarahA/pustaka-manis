@@ -1,68 +1,84 @@
 @props([
     'name' => 'barcode',
     'id' => 'barcode-input',
-    'placeholder' => 'Scan / ketik kode barcode...',
+    'placeholder' => 'Scan barcode / ketik kode...',
     'label' => 'Kode Barcode',
     'autofocus' => true,
 ])
 
 <div x-data="smartScanner({ targetId: '{{ $id }}' })" class="space-y-3">
-    {{-- Header & Mode Toggle --}}
-    <div class="flex items-center justify-between">
-        <label for="{{ $id }}" class="block text-xs font-semibold uppercase tracking-wider text-pearl/70">
+    {{-- Mode Toggle Header --}}
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/10 pb-2">
+        <label for="{{ $id }}" class="text-xs font-bold uppercase tracking-wider text-pearl/80">
             {{ $label }}
         </label>
-        <div class="inline-flex rounded-full bg-navy-soft/60 p-1 border border-white/10 backdrop-blur-md">
+        <div class="inline-flex rounded-full bg-navy-dark/80 p-1 border border-white/10 backdrop-blur-md">
             <button
                 type="button"
                 @click="setMode('manual')"
-                :class="mode === 'manual' ? 'bg-azure-soft text-navy-dark shadow-sm' : 'text-pearl/70 hover:text-pearl'"
-                class="rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200"
+                :class="mode === 'manual' ? 'bg-azure-soft text-navy-dark font-extrabold shadow-md' : 'text-pearl/70 hover:text-pearl font-medium'"
+                class="rounded-full px-3.5 py-1.5 text-xs transition-all duration-200"
             >
-                ⌨️ Manual / USB
+                ⌨️ Input Manual / USB
             </button>
             <button
                 type="button"
                 @click="setMode('camera')"
-                :class="mode === 'camera' ? 'bg-azure-soft text-navy-dark shadow-sm' : 'text-pearl/70 hover:text-pearl'"
-                class="rounded-full px-3 py-1 text-xs font-semibold transition-all duration-200"
+                :class="mode === 'camera' ? 'bg-azure-soft text-navy-dark font-extrabold shadow-md' : 'text-pearl/70 hover:text-pearl font-medium'"
+                class="rounded-full px-3.5 py-1.5 text-xs transition-all duration-200"
             >
                 📷 Scan Kamera
             </button>
         </div>
     </div>
 
-    {{-- Mode Manual / USB Scanner Input --}}
+    {{-- Mode 1: Input Manual / USB Hardware Scanner --}}
     <div x-show="mode === 'manual'" class="relative">
-        <input
-            type="text"
-            id="{{ $id }}"
-            name="{{ $name }}"
-            x-model="code"
-            x-ref="manualInput"
-            @keydown.enter.prevent="$dispatch('barcode-scanned', code); $el.form && $el.form.requestSubmit ? $el.form.requestSubmit() : null"
-            placeholder="{{ $placeholder }}"
-            class="input-debossed w-full rounded-pill border-0 px-4 py-3 text-sm text-pearl placeholder-pearl/40 focus:ring-2 focus:ring-azure-soft/50"
-            @if($autofocus) autofocus @endif
-        />
-        <div class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-pearl/40">
-            [Enter / Auto-Scan]
+        <div class="flex gap-2">
+            <input
+                type="text"
+                id="{{ $id }}"
+                name="{{ $name }}"
+                x-model="code"
+                x-ref="manualInput"
+                @keydown.enter.prevent="handleEnter()"
+                placeholder="{{ $placeholder }}"
+                class="input-debossed w-full rounded-pill border-0 px-5 py-3 text-sm text-pearl placeholder-pearl/40 focus:ring-2 focus:ring-azure-soft/50"
+                @if($autofocus) autofocus @endif
+            />
+            <button
+                type="button"
+                @click="handleEnter()"
+                class="rounded-pill bg-azure-soft px-5 py-3 text-xs font-bold text-navy-dark hover:bg-azure-glow transition shrink-0"
+            >
+                Cari 🔍
+            </button>
         </div>
+        <p class="mt-1 text-[11px] text-pearl/40 px-2">
+            💡 Untuk USB Hardware Scanner, kursor otomatis `autofocus` dan auto-submit saat discan.
+        </p>
     </div>
 
-    {{-- Mode Scan Kamera --}}
-    <div x-show="mode === 'camera'" class="space-y-2" x-cloak>
-        <div id="reader-{{ $id }}" class="overflow-hidden rounded-2xl border border-white/10 bg-black/40 text-center text-xs text-pearl/60 min-h-[220px] flex items-center justify-center">
-            <div x-show="!isScanning" class="p-4">
-                <p>Klik tombol di bawah untuk mengaktifkan kamera.</p>
+    {{-- Mode 2: Scan Kamera & File Photo Barcode --}}
+    <div x-show="mode === 'camera'" class="space-y-3" x-cloak>
+        <div id="reader-{{ $id }}" class="overflow-hidden rounded-3xl border border-white/10 bg-black/60 text-center text-xs text-pearl/70 min-h-[220px] flex flex-col items-center justify-center p-4">
+            <div x-show="!isScanning && !cameraError" class="space-y-2">
+                <p class="text-sm font-semibold text-pearl">📷 Kamera Siap Digunakan</p>
+                <p class="text-xs text-pearl/50">Klik tombol di bawah untuk mengaktifkan video kamera device.</p>
+            </div>
+            <div x-show="cameraError" class="text-red-300 p-2 text-xs space-y-1 bg-red-500/10 rounded-2xl border border-red-500/20">
+                <p class="font-bold">⚠️ Kendala Kamera:</p>
+                <p x-text="cameraError"></p>
+                <p class="text-[10px] text-pearl/50">Anda dapat menggunakan opsi "Upload Foto Barcode" di bawah jika kamera browser diblokir.</p>
             </div>
         </div>
-        <div class="flex gap-2">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
                 type="button"
                 x-show="!isScanning"
                 @click="startCameraScanner()"
-                class="w-full rounded-full bg-azure-soft/20 border border-azure-soft/40 py-2.5 text-xs font-bold text-azure-soft hover:bg-azure-soft/30"
+                class="rounded-full bg-azure-soft/20 border border-azure-soft/40 py-2.5 px-3 text-xs font-bold text-azure-soft hover:bg-azure-soft/30 transition text-center"
             >
                 ▶️ Buka Kamera Device
             </button>
@@ -70,110 +86,188 @@
                 type="button"
                 x-show="isScanning"
                 @click="stopCameraScanner()"
-                class="w-full rounded-full bg-red-500/20 border border-red-500/40 py-2.5 text-xs font-bold text-red-300 hover:bg-red-500/30"
+                class="rounded-full bg-red-500/20 border border-red-500/40 py-2.5 px-3 text-xs font-bold text-red-300 hover:bg-red-500/30 transition text-center"
             >
                 ⏹️ Hentikan Kamera
             </button>
+            <label class="cursor-pointer rounded-full bg-white/5 border border-white/10 py-2.5 px-3 text-center text-xs font-bold text-pearl hover:bg-white/10 transition">
+                📁 Upload Foto Barcode
+                <input type="file" accept="image/*" class="hidden" @change="scanFromFile($event)" />
+            </label>
         </div>
     </div>
 </div>
 
-@once
-    @push('scripts')
-        <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-        <script>
-            document.addEventListener('alpine:init', () => {
-                Alpine.data('smartScanner', (config) => ({
-                    mode: 'manual',
-                    code: '',
-                    isScanning: false,
-                    html5QrcodeScanner: null,
+<script>
+    if (typeof window.registerSmartScannerComponent === 'undefined') {
+        window.registerSmartScannerComponent = function() {
+            if (typeof window.Alpine === 'undefined') return;
 
-                    setMode(newMode) {
-                        this.mode = newMode;
-                        if (newMode === 'manual') {
-                            this.stopCameraScanner();
-                            this.$nextTick(() => {
-                                if (this.$refs.manualInput) {
-                                    this.$refs.manualInput.focus();
-                                }
-                            });
-                        } else {
-                            this.startCameraScanner();
+            window.Alpine.data('smartScanner', (config) => ({
+                mode: 'manual',
+                code: '',
+                isScanning: false,
+                cameraError: null,
+                html5QrcodeScanner: null,
+
+                init() {
+                    this.$nextTick(() => {
+                        if (this.$refs.manualInput && this.mode === 'manual') {
+                            this.$refs.manualInput.focus();
                         }
-                    },
+                    });
+                },
 
-                    startCameraScanner() {
-                        if (typeof Html5Qrcode === 'undefined') {
-                            alert('Library html5-qrcode belum dimuat. Pastikan koneksi internet atau script CDN aktif.');
-                            return;
-                        }
-
-                        const elementId = 'reader-' + config.targetId;
-                        this.html5QrcodeScanner = new Html5Qrcode(elementId);
-                        this.isScanning = true;
-
-                        const qrCodeSuccessCallback = (decodedText, decodedResult) => {
-                            this.code = decodedText;
-                            this.$dispatch('barcode-scanned', decodedText);
-
-                            // Audio Beep Feedback
-                            this.playBeepSound();
-
-                            const inputEl = document.getElementById(config.targetId);
-                            if (inputEl) {
-                                inputEl.value = decodedText;
-                                inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-                                if (inputEl.form) {
-                                    inputEl.form.requestSubmit();
-                                }
+                setMode(newMode) {
+                    this.mode = newMode;
+                    this.cameraError = null;
+                    if (newMode === 'manual') {
+                        this.stopCameraScanner();
+                        this.$nextTick(() => {
+                            if (this.$refs.manualInput) {
+                                this.$refs.manualInput.focus();
                             }
-                            this.stopCameraScanner();
-                            this.mode = 'manual';
-                        };
-
-                        const qrConfig = { fps: 10, qrbox: { width: 250, height: 150 } };
-
-                        this.html5QrcodeScanner.start(
-                            { facingMode: "environment" },
-                            qrConfig,
-                            qrCodeSuccessCallback
-                        ).catch(err => {
-                            console.warn("Camera start error:", err);
-                            this.isScanning = false;
                         });
-                    },
+                    } else {
+                        this.startCameraScanner();
+                    }
+                },
 
-                    stopCameraScanner() {
-                        if (this.html5QrcodeScanner && this.isScanning) {
-                            this.html5QrcodeScanner.stop().then(() => {
-                                this.html5QrcodeScanner.clear();
-                                this.isScanning = false;
-                            }).catch(err => {
-                                console.warn("Camera stop error:", err);
-                                this.isScanning = false;
-                            });
-                        }
-                    },
-
-                    playBeepSound() {
-                        try {
-                            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                            const osc = ctx.createOscillator();
-                            const gain = ctx.createGain();
-                            osc.type = 'sine';
-                            osc.frequency.setValueAtTime(880, ctx.currentTime); // 880 Hz pitch
-                            gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                            osc.connect(gain);
-                            gain.connect(ctx.destination);
-                            osc.start();
-                            osc.stop(ctx.currentTime + 0.15);
-                        } catch (e) {
-                            // ignore audio context errors if blocked by browser policy
+                handleEnter() {
+                    const val = this.code.trim();
+                    if (!val) return;
+                    this.$dispatch('barcode-scanned', val);
+                    const inputEl = document.getElementById(config.targetId);
+                    if (inputEl && inputEl.form) {
+                        if (typeof inputEl.form.requestSubmit === 'function') {
+                            inputEl.form.requestSubmit();
                         }
                     }
-                }));
-            });
-        </script>
-    @endpush
-@endonce
+                },
+
+                async startCameraScanner() {
+                    if (typeof Html5Qrcode === 'undefined') {
+                        this.cameraError = 'Library html5-qrcode belum dimuat. Periksa jaringan CDN.';
+                        return;
+                    }
+
+                    const elementId = 'reader-' + config.targetId;
+                    this.cameraError = null;
+
+                    if (this.html5QrcodeScanner) {
+                        await this.stopCameraScanner();
+                    }
+
+                    this.html5QrcodeScanner = new Html5Qrcode(elementId);
+
+                    const qrCodeSuccessCallback = (decodedText) => {
+                        this.onBarcodeDetected(decodedText);
+                    };
+
+                    const qrConfig = { fps: 15, qrbox: { width: 260, height: 160 } };
+
+                    try {
+                        let cameraConstraint = { facingMode: "environment" };
+
+                        try {
+                            const devices = await Html5Qrcode.getCameras();
+                            if (devices && devices.length > 0) {
+                                const backCam = devices.find(d => 
+                                    d.label.toLowerCase().includes('back') || 
+                                    d.label.toLowerCase().includes('rear') ||
+                                    d.label.toLowerCase().includes('environment')
+                                );
+                                cameraConstraint = backCam ? backCam.id : devices[0].id;
+                            }
+                        } catch (e) {}
+
+                        await this.html5QrcodeScanner.start(
+                            cameraConstraint,
+                            qrConfig,
+                            qrCodeSuccessCallback
+                        );
+                        this.isScanning = true;
+                    } catch (err1) {
+                        try {
+                            await this.html5QrcodeScanner.start(
+                                { facingMode: "user" },
+                                qrConfig,
+                                qrCodeSuccessCallback
+                            );
+                            this.isScanning = true;
+                        } catch (err2) {
+                            this.isScanning = false;
+                            this.cameraError = 'Izin kamera ditolak atau kamera tidak aktif pada perangkat ini.';
+                        }
+                    }
+                },
+
+                async stopCameraScanner() {
+                    if (this.html5QrcodeScanner && this.isScanning) {
+                        try {
+                            await this.html5QrcodeScanner.stop();
+                            this.html5QrcodeScanner.clear();
+                        } catch (e) {}
+                    }
+                    this.isScanning = false;
+                },
+
+                scanFromFile(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+
+                    if (typeof Html5Qrcode === 'undefined') {
+                        alert('Library html5-qrcode belum dimuat.');
+                        return;
+                    }
+
+                    const elementId = 'reader-' + config.targetId;
+                    const html5Qrcode = new Html5Qrcode(elementId);
+                    
+                    html5Qrcode.scanFile(file, true)
+                        .then(decodedText => {
+                            this.onBarcodeDetected(decodedText);
+                        })
+                        .catch(err => {
+                            alert('Format foto barcode tidak terbaca. Pastikan foto jelas dan cukup terang.');
+                        });
+                },
+
+                onBarcodeDetected(decodedText) {
+                    this.code = decodedText;
+                    this.$dispatch('barcode-scanned', decodedText);
+                    this.playBeepSound();
+
+                    const inputEl = document.getElementById(config.targetId);
+                    if (inputEl) {
+                        inputEl.value = decodedText;
+                        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                    this.stopCameraScanner();
+                    this.mode = 'manual';
+                },
+
+                playBeepSound() {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(880, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.15);
+                    } catch (e) {}
+                }
+            }));
+        };
+
+        if (window.Alpine) {
+            window.registerSmartScannerComponent();
+        } else {
+            document.addEventListener('alpine:init', window.registerSmartScannerComponent);
+        }
+    }
+</script>

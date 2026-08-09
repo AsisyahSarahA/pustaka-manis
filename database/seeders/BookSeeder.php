@@ -18,6 +18,12 @@ class BookSeeder extends Seeder
      */
     public function run(): void
     {
+        if (Book::count() > 0) {
+            $this->command?->info('Data buku sudah ada. Lewati BookSeeder.');
+
+            return;
+        }
+
         $pelajaran = Category::firstOrCreate(
             ['slug' => 'buku-pelajaran'],
             ['name' => 'Buku Pelajaran', 'prefix' => 'BPL', 'description' => 'Buku teks pelajaran sekolah']

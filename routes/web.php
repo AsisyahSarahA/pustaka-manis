@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
         Route::get('book-items/{bookItem}/label', [BookItemController::class, 'printSingleLabel'])->name('book-items.label');
         Route::put('book-items/{bookItem}', [BookItemController::class, 'update'])->name('book-items.update');
         Route::delete('book-items/{bookItem}', [BookItemController::class, 'destroy'])->name('book-items.destroy');
+        Route::get('members/cards/print', [MemberController::class, 'printAllCards'])->name('members.cards.print')->middleware('module:member_card');
         Route::resource('members', MemberController::class);
         Route::get('members/{member}/card', [MemberController::class, 'printCard'])->name('members.card')->middleware('module:member_card');
 

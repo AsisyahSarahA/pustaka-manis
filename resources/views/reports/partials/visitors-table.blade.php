@@ -6,7 +6,7 @@
     <x-table :headers="['Tanggal', 'Jam', 'Tipe', 'Nama', 'Instansi / Kelas', 'Tujuan']">
         @forelse ($visitors as $visitor)
             <tr class="transition-colors hover:bg-white/5">
-                <td class="px-4 py-3 text-pearl/60">{{ $visitor->visit_date->format('d M Y') }}</td>
+                <td class="px-4 py-3 text-pearl/60">{{ optional($visitor->visit_date)->format('d M Y') }}</td>
                 <td class="px-4 py-3 font-mono text-sm text-pearl/60">{{ $visitor->check_in_time }}</td>
                 <td class="px-4 py-3">
                     <x-badge :variant="$visitor->visitor_type === 'siswa' ? 'blue' : ($visitor->visitor_type === 'guru' ? 'azure' : 'amber')">{{ $visitor->visitor_type_label }}</x-badge>

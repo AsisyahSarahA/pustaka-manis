@@ -7,10 +7,15 @@
                 <h2 class="text-xl font-bold text-pearl">Anggota Perpustakaan</h2>
                 <p class="mt-1 text-sm text-pearl/50">Kelola data siswa, guru, staf, dan pengunjung.</p>
             </div>
-            <x-button href="{{ route('members.create') }}" variant="primary">
-                <x-icon name="plus" class="h-4 w-4" />
-                Tambah Anggota
-            </x-button>
+            <div class="flex flex-wrap gap-3">
+                <x-button href="{{ route('members.cards.print', request()->query()) }}" target="_blank" variant="secondary">
+                    🪪 Cetak Semua Kartu
+                </x-button>
+                <x-button href="{{ route('members.create') }}" variant="primary">
+                    <x-icon name="plus" class="h-4 w-4" />
+                    Tambah Anggota
+                </x-button>
+            </div>
         </div>
 
         <form data-live-form method="GET" class="glass-panel rounded-4xl p-4" @submit.prevent="reload()">

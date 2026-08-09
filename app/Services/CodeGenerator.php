@@ -51,14 +51,15 @@ class CodeGenerator
         $prefix = $prefixMap[$type] ?? 'X';
         $year = date('Y');
 
-        $lastMember = Member::where('member_code', 'like', "{$prefix}-{$year}-%")
+        $lastMember = Member::where('member_code', 'like', "{$prefix}-{$year}%")
             ->orderBy('id', 'desc')
             ->first();
 
         $sequence = 1;
         if ($lastMember) {
-            $parts = explode('-', $lastMember->member_code);
-            $sequence = (int) end($parts) + 1;
+            // Format: S-2026001 → urutan = angka setelah tahun (001).
+            $offset = strlen($prefix) + 1 + strlen($year);
+            $sequence = (int) substr($lastMember->member_code, $offset) + 1;
         }
 
         return sprintf('%s-%s%03d', $prefix, $year, $sequence);

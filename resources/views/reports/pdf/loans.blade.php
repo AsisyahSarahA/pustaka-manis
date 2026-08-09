@@ -12,7 +12,7 @@
             </td>
             <td style="width: 33%;">
                 <div class="summary-card">
-                    <div class="val" style="color: #2563eb;">{{ number_format($loans->sum(fn($l) => $l->items->count())) }}</div>
+                    <div class="val" style="color: #2563eb;">{{ number_format($loans->sum(fn($l) => $l->items_count ?? 0)) }}</div>
                     <div class="lbl">Total Buku Dipinjam</div>
                 </div>
             </td>
@@ -23,9 +23,7 @@
                 </div>
             </td>
         </tr>
-    </table>
-
-    <h3 style="font-size: 11px; margin: 10px 0 6px; color: #0f172a; font-weight: bold; text-transform: uppercase;">Detail Transaksi Peminjaman Buku</h3>
+    </table>    <h3 style="font-size: 11px; margin: 10px 0 6px; color: #0f172a; font-weight: bold; text-transform: uppercase;">Detail Transaksi Peminjaman Buku</h3>
     <table class="data-table">
         <thead>
             <tr>

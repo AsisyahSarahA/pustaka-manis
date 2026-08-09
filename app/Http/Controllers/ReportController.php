@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\InventoryExport;
 use App\Exports\MonthlyCirculationExport;
+use App\Models\Category;
 use App\Models\LoanItem;
 use App\Services\ReportService;
 use App\Services\WordReportService;
@@ -27,18 +28,21 @@ class ReportController extends Controller
     {
         $type = $request->query('type', 'monthly');
 
-        if ($type === 'inventory') {
-            $data = $this->reportService->getInventoryData(
-                $request->query('category_id'),
-                $request->query('status')
-            );
-        } else {
-            $month = (int) $request->query('month', Carbon::now()->format('m'));
-            $year = (int) $request->query('year', Carbon::now()->format('Y'));
-            $data = $this->reportService->getMonthlyCirculationData($month, $year);
-        }
-
+        $data = $this->buildReportData($type, $request);
         $data['type'] = $type;
+
+        // Default variabel filter agar form tidak error saat query kosong / salah tipe.
+        $data += [
+            'start' => Carbon::now()->startOfMonth()->toDateString(),
+            'end' => Carbon::now()->toDateString(),
+            'class' => '',
+            'visitor_type' => '',
+            'month' => (int) Carbon::now()->format('m'),
+            'year' => (int) Carbon::now()->format('Y'),
+            'category_id' => null,
+            'status' => '',
+            'categories' => Category::orderBy('name')->get(),
+        ];
 
         return view('reports.index', $data);
     }
@@ -48,37 +52,74 @@ class ReportController extends Controller
         $type = $request->query('type', 'monthly');
         $format = strtolower($request->query('format', 'pdf'));
 
-        if ($type === 'inventory') {
-            $data = $this->reportService->getInventoryData(
-                $request->query('category_id'),
-                $request->query('status')
-            );
+        $data = $this->buildReportData($type, $request);
+        $data['type'] = $type;
 
-            if ($format === 'excel') {
+        if ($format === 'excel') {
+            if ($type === 'inventory') {
                 return Excel::download(new InventoryExport($data), 'laporan-inventaris-' . now()->format('Y-m-d') . '.xlsx');
             }
 
-            $pdf = $this->reportService->generatePdf('inventory', $data);
-            return $pdf->download('laporan-inventaris-' . now()->format('Y-m-d') . '.pdf');
+            if ($type === 'monthly') {
+                $filename = 'laporan-sirkulasi-' . $data['year'] . '-' . sprintf('%02d', $data['month']) . '.xlsx';
+                return Excel::download(new MonthlyCirculationExport($data), $filename);
+            }
+
+            // Loans / overdue / visitors: belum ada export Excel khusus → lanjut ke PDF.
         }
 
-        // Default: Monthly Circulation
-        $month = (int) $request->query('month', Carbon::now()->format('m'));
-        $year = (int) $request->query('year', Carbon::now()->format('Y'));
-        $data = $this->reportService->getMonthlyCirculationData($month, $year);
-
-        if ($format === 'excel') {
-            return Excel::download(new MonthlyCirculationExport($data), 'laporan-sirkulasi-' . $year . '-' . sprintf('%02d', $month) . '.xlsx');
-        }
-
-        if ($format === 'word') {
+        if ($format === 'word' && $type === 'monthly') {
             $tempFile = $this->wordReportService->generateMonthlyReportDoc($data);
-            return response()->download($tempFile, 'laporan-sirkulasi-' . $year . '-' . sprintf('%02d', $month) . '.docx')->deleteFileAfterSend(true);
+            $filename = 'laporan-sirkulasi-' . $data['year'] . '-' . sprintf('%02d', $data['month']) . '.docx';
+            return response()->download($tempFile, $filename)->deleteFileAfterSend(true);
         }
 
-        // Default PDF
-        $pdf = $this->reportService->generatePdf('monthly', $data);
-        return $pdf->download('laporan-sirkulasi-' . $year . '-' . sprintf('%02d', $month) . '.pdf');
+        $pdf = $this->reportService->generatePdf($type, $data);
+
+        $base = match ($type) {
+            'inventory' => 'laporan-inventaris',
+            'visitors' => 'laporan-kunjungan',
+            'overdue' => 'laporan-keterlambatan',
+            'loans' => 'laporan-peminjaman',
+            default => 'laporan-sirkulasi',
+        };
+
+        return $pdf->download($base . '-' . now()->format('Y-m-d') . '.pdf');
+    }
+
+    /**
+     * Susun data laporan sesuai tipe. Menghindari N+1 query.
+     */
+    protected function buildReportData(string $type, Request $request): array
+    {
+        return match ($type) {
+            'inventory' => $this->reportService->getInventoryData(
+                $request->query('category_id'),
+                $request->query('status')
+            ),
+            'visitors' => $this->reportService->getVisitorReportData($request),
+            'overdue' => $this->reportService->getLoanReportData($request, overdueOnly: true),
+            'monthly' => $this->normalizeMonthly($this->reportService->getMonthlyCirculationData(
+                (int) $request->query('month', Carbon::now()->format('m')),
+                (int) $request->query('year', Carbon::now()->format('Y'))
+            )),
+            default => $this->reportService->getLoanReportData($request),
+        };
+    }
+
+    /**
+     * Samakan nama variabel laporan bulanan agar sesuai ekspektasi view.
+     */
+    protected function normalizeMonthly(array $data): array
+    {
+        return [
+            ...$data,
+            'returns' => $data['returns_count'],
+            'visitors' => $data['visitors_count'],
+            'totalBorrowed' => $data['total_borrowed_items'],
+            'totalFine' => $data['total_fine_amount'],
+            'overdue' => $data['overdue_count'],
+        ];
     }
 
     /**

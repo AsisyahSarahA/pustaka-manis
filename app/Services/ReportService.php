@@ -8,6 +8,7 @@ use App\Models\Loan;
 use App\Models\LoanItem;
 use App\Models\VisitorLog;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -47,8 +48,9 @@ class ReportService
             ->whereBetween('updated_at', [$start, $end])
             ->count();
 
-        $damagedItemsCount = LoanItem::where('condition_after', 'rusak')
-            ->whereBetween('updated_at', [$start, $end])
+        $damagedItemsCount = LoanItem::where('status', 'dikembalikan')
+            ->whereBetween('return_date', [$start, $end])
+            ->whereHas('bookItem', fn ($q) => $q->where('condition', 'rusak'))
             ->count();
 
         return [
@@ -124,5 +126,94 @@ class ReportService
             ]);
 
         return $pdf;
+    }
+
+    /**
+     * Ambil laporan transaksi peminjaman dengan filter rentang tanggal & kelas.
+     * N+1 dihindari dengan with(['member']) + withCount('items').
+     */
+    public function getLoanReportData(Request $request, bool $overdueOnly = false): array
+    {
+        [$start, $end] = $this->parseDateRange($request);
+        $hasRange = $request->filled('start') || $request->filled('end');
+
+        $query = Loan::with(['member'])->withCount('items');
+
+        if ($overdueOnly && !$hasRange) {
+            // Default laporan keterlambatan: tampilkan SEMUA yang sedang terlambat,
+            // tanpa batas tanggal pinjam (agar transaksi lama tetap terlihat).
+            $start = '';
+            $end = '';
+        } else {
+            $query->whereBetween('borrow_date', [$start, $end]);
+        }
+
+        if ($request->filled('class')) {
+            $query->whereHas('member', fn ($q) => $q->where('department_class', 'like', '%' . $request->input('class') . '%'));
+        }
+
+        if ($overdueOnly) {
+            // Transaksi yang benar-benar telat: status terlambat ATAU masih berjalan tapi lewat jatuh tempo.
+            $query->where(function ($q) {
+                $q->where('status', 'terlambat')
+                  ->orWhere(function ($q2) {
+                      $q2->where('status', 'berjalan')
+                         ->whereDate('due_date', '<', Carbon::now()->toDateString());
+                  });
+            });
+        }
+
+        $loans = $query->orderByDesc('borrow_date')->get();
+
+        return [
+            'loans' => $loans,
+            'start' => $start,
+            'end' => $end,
+            'class' => $request->input('class', ''),
+            'overdue' => $overdueOnly,
+        ];
+    }
+
+    /**
+     * Ambil laporan kunjungan (buku tamu) dengan filter rentang tanggal & tipe pengunjung.
+     */
+    public function getVisitorReportData(Request $request): array
+    {
+        [$start, $end] = $this->parseDateRange($request);
+
+        $query = VisitorLog::with('member')
+            ->whereBetween('visit_date', [$start, $end]);
+
+        if ($request->filled('visitor_type')) {
+            $query->where('visitor_type', $request->input('visitor_type'));
+        }
+
+        $visitors = $query->orderByDesc('visit_date')->get();
+
+        return [
+            'visitors' => $visitors,
+            'start' => $start,
+            'end' => $end,
+            'visitor_type' => $request->input('visitor_type', ''),
+        ];
+    }
+
+    /**
+     * Parse rentang tanggal dari query string, dengan fallback yang aman:
+     * kosong/tidak valid → awal bulan s.d. hari ini. Tanggal dibalik bila start > end.
+     */
+    protected function parseDateRange(Request $request): array
+    {
+        $start = $request->input('start');
+        $end = $request->input('end');
+
+        $start = $start && strtotime($start) ? Carbon::parse($start)->toDateString() : Carbon::now()->startOfMonth()->toDateString();
+        $end = $end && strtotime($end) ? Carbon::parse($end)->toDateString() : Carbon::now()->toDateString();
+
+        if (Carbon::parse($end)->lt(Carbon::parse($start))) {
+            [$start, $end] = [$end, $start];
+        }
+
+        return [$start, $end];
     }
 }

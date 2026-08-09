@@ -12,7 +12,7 @@
             </td>
             <td style="width: 50%;">
                 <div class="summary-card">
-                    <div class="val" style="color: #d97706;">{{ number_format($loans->sum(fn($l) => $l->items->count())) }}</div>
+                    <div class="val" style="color: #d97706;">{{ number_format($loans->sum(fn($l) => $l->items_count ?? 0)) }}</div>
                     <div class="lbl">Total Eksemplar Terlibat</div>
                 </div>
             </td>

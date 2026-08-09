@@ -7,6 +7,7 @@
     <title>@yield('title', 'Dashboard') — {{ setting('app_name', 'PustakaManis') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body class="min-h-screen overflow-x-hidden bg-navy-base font-sans text-pearl antialiased">
     <div id="top-progress-bar"></div>

@@ -35,6 +35,30 @@
             cursor: pointer;
             font-size: 13px;
         }
+        .btn-back {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: background-color 0.15s ease;
+        }
+        .btn-back:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+        }
+        .toolbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         .label-grid {
             display: grid;
             grid-template-columns: repeat(3, 50mm);
@@ -120,7 +144,13 @@
             <strong>Preview Cetak Label Barcode (Ukuran 5 x 3 cm)</strong>
             <div style="font-size: 11px; opacity: 0.8;">Total: {{ count($items) }} eksemplar label</div>
         </div>
-        <button onclick="window.print()" class="btn-print">🖨️ Cetak Sekarang</button>
+        <div class="toolbar-actions">
+            <a href="#" onclick="history.back(); return false;" onauxclick="history.back(); return false;" class="btn-back" title="Kembali ke daftar buku">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px; height:14px;"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+                Kembali
+            </a>
+            <button onclick="window.print()" class="btn-print">🖨️ Cetak Sekarang</button>
+        </div>
     </div>
 
     <div class="label-grid">

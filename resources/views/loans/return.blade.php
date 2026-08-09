@@ -112,38 +112,48 @@
     </div>
 
     <script>
-        function returnApp() {
-            return {
-                memberError: null,
+        if (typeof window.registerReturnApp === 'undefined') {
+            window.registerReturnApp = function() {
+                if (typeof window.Alpine === 'undefined') return;
 
-                init() {
-                    window.addEventListener('barcode-scanned', (e) => {
-                        this.scanMember(e.detail);
-                    });
-                },
+                window.Alpine.data('returnApp', () => ({
+                    memberError: null,
 
-                async scanMember(manualCode = null) {
-                    const inputEl = document.getElementById('memberScanInput');
-                    const code = manualCode || (inputEl ? inputEl.value.trim() : '');
-                    if (!code) return;
+                    init() {
+                        window.addEventListener('barcode-scanned', (e) => {
+                            this.scanMember(e.detail);
+                        });
+                    },
 
-                    this.memberError = null;
+                    async scanMember(manualCode = null) {
+                        const inputEl = document.getElementById('memberScanInput');
+                        const code = manualCode || (inputEl ? inputEl.value.trim() : '');
+                        if (!code) return;
 
-                    try {
-                        const res = await fetch(`{{ route('loans.return.api.member') }}?code=${encodeURIComponent(code)}`);
-                        const data = await res.json();
+                        this.memberError = null;
 
-                        if (!data.found) {
-                            this.memberError = data.message;
-                            return;
+                        try {
+                            const res = await fetch(`{{ route('loans.return.api.member') }}?code=${encodeURIComponent(code)}`);
+                            const data = await res.json();
+
+                            if (!data.found) {
+                                this.memberError = data.message;
+                                return;
+                            }
+
+                            window.location.href = data.redirect;
+                        } catch (e) {
+                            this.memberError = 'Gagal terhubung ke server.';
                         }
-
-                        window.location.href = data.redirect;
-                    } catch (e) {
-                        this.memberError = 'Gagal terhubung ke server.';
                     }
-                }
+                }));
             };
+
+            if (window.Alpine) {
+                window.registerReturnApp();
+            } else {
+                document.addEventListener('alpine:init', window.registerReturnApp);
+            }
         }
     </script>
 </x-layouts.app>

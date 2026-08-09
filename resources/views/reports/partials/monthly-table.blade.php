@@ -30,10 +30,10 @@
             @forelse ($loans as $loan)
                 <tr class="transition-colors hover:bg-white/5">
                     <td class="px-4 py-3 font-mono text-sm text-azure-soft">{{ $loan->loan_code }}</td>
-                    <td class="px-4 py-3 text-pearl">{{ $loan->member->name }}</td>
-                    <td class="px-4 py-3 text-pearl/60">{{ $loan->member->department_class ?? '-' }}</td>
-                    <td class="px-4 py-3 text-pearl/60">{{ $loan->borrow_date->format('d M Y') }}</td>
-                    <td class="px-4 py-3 text-pearl/60">{{ $loan->due_date->format('d M Y') }}</td>
+                    <td class="px-4 py-3 text-pearl">{{ $loan->member?->name ?? 'Anggota terhapus' }}</td>
+                    <td class="px-4 py-3 text-pearl/60">{{ $loan->member?->department_class ?? '-' }}</td>
+                    <td class="px-4 py-3 text-pearl/60">{{ optional($loan->borrow_date)->format('d M Y') }}</td>
+                    <td class="px-4 py-3 text-pearl/60">{{ optional($loan->due_date)->format('d M Y') }}</td>
                     <td class="px-4 py-3 text-pearl/60">{{ $loan->items->count() }} buku</td>
                     <td class="px-4 py-3">
                         @if ($loan->status === 'selesai')
