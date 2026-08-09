@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    /* ==== Tema Default (Gelap) ==== */
+    :root {
+        --navy-base: 22 32 50;
+        --navy-soft: 42 59 84;
+        --navy-deep: 15 23 36;
+        --pearl: 244 247 246;
+        --azure-soft: 151 221 233;
+        --azure-light: 207 235 255;
+        --amber-warm: 251 191 36;
+        --danger-red: 248 113 113;
+    }
+
+    /* ==== Tema Terang ==== */
+    html.light {
+        --navy-base: 243 245 248;
+        --navy-soft: 255 255 255;
+        --navy-deep: 28 37 54;
+        --pearl: 22 32 50;
+        --azure-soft: 14 165 180;
+        --azure-light: 56 189 248;
+        --amber-warm: 180 120 10;
+        --danger-red: 220 38 38;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-navy-base text-pearl font-sans antialiased;
+    }
+
+    /* ==== Top SPA Progress Bar ==== */
+    #top-progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 0%;
+        background: linear-gradient(90deg, #0ea5b4, #97dde9, #cfebff);
+        z-index: 9999;
+        transition: width 200ms ease-out, opacity 200ms ease-in;
+        box-shadow: 0 0 10px rgba(151, 221, 233, 0.8), 0 0 5px rgba(14, 165, 180, 0.8);
+    }
+}
+
+@layer components {
+    /* Liquid Glass Panel — background solid (tanpa backdrop-blur) agar ringan.
+       Backdrop-blur hanya dipakai di sidebar & header yang layernya statis. */
+    .glass-panel {
+        @apply bg-navy-soft/80 border border-white/15;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Panel dengan efek blur sungguhan (hanya untuk elemen besar statis) */
+    .glass-panel-blur {
+        @apply bg-navy-soft/95 border border-white/10 backdrop-blur-liquid;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Floating Sidebar & Main Layout Alignment */
+    .layout-sidebar {
+        @apply glass-panel-blur fixed top-4 bottom-4 left-4 z-40 flex w-64 flex-col overflow-hidden rounded-4xl p-4 transition-transform duration-300 lg:top-6 lg:bottom-6 lg:left-6;
+    }
+    .layout-main {
+        @apply flex min-h-screen w-full min-w-0 flex-col;
+    }
+    @media (min-width: 1024px) {
+        .layout-main {
+            padding-left: 18.5rem; /* 296px: 24px left + 256px sidebar + 16px gap */
+        }
+    }
+
+    /* Skeuomorphic Tactile Button (Press effect) */
+    .btn-skeuo {
+        transition: all 150ms ease;
+    }
+    .btn-skeuo:active {
+        box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.1);
+        transform: translateY(1px);
+    }
+
+    /* Debossed Form Input */
+    .input-debossed {
+        @apply bg-navy-soft/70 text-pearl placeholder-pearl/40;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .input-debossed:focus {
+        outline: none;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.2),
+            0 0 0 2px rgba(151, 221, 233, 0.4);
+    }
+
+    /* ==== Penyesuaian Tema Terang ==== */
+    html.light body {
+        @apply bg-navy-base text-pearl;
+    }
+
+    html.light .mesh-gradient,
+    html.light .bg-mesh-gradient {
+        background: radial-gradient(at 20% 20%, #dbeafe 0px, transparent 50%),
+            radial-gradient(at 80% 80%, #e0f2fe 0px, transparent 50%), #f3f5f8;
+    }
+
+    html.light .glass-panel {
+        @apply bg-white/90 border-navy-base/15 text-pearl;
+        box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    }
+
+    html.light .glass-panel-blur {
+        @apply bg-white/95 border-navy-base/15 text-pearl;
+        box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+    }
+
+    html.light .input-debossed {
+        @apply bg-white text-navy-base placeholder-navy-base/40;
+        box-shadow: inset 0 2px 6px rgba(31, 41, 55, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+    html.light .input-debossed:focus {
+        box-shadow: inset 0 2px 6px rgba(31, 41, 55, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.04),
+            0 0 0 2px rgba(14, 165, 180, 0.4);
+    }
+
+    /* Light Mode Overrides for Transparency & Borders */
+    html.light .bg-white\/5 { background-color: rgba(22, 32, 50, 0.04); }
+    html.light .bg-white\/10 { background-color: rgba(22, 32, 50, 0.08); }
+    html.light .bg-white\/15 { background-color: rgba(22, 32, 50, 0.12); }
+    html.light .bg-white\/20 { background-color: rgba(22, 32, 50, 0.16); }
+
+    html.light .hover\:bg-white\/5:hover { background-color: rgba(22, 32, 50, 0.05); }
+    html.light .hover\:bg-white\/10:hover { background-color: rgba(22, 32, 50, 0.08); }
+    html.light .hover\:bg-white\/15:hover { background-color: rgba(22, 32, 50, 0.12); }
+
+    html.light .border-white\/5 { border-color: rgba(22, 32, 50, 0.06); }
+    html.light .border-white\/10 { border-color: rgba(22, 32, 50, 0.12); }
+    html.light .border-white\/15 { border-color: rgba(22, 32, 50, 0.16); }
+    html.light .border-white\/20 { border-color: rgba(22, 32, 50, 0.22); }
+
+    html.light .text-white { color: rgb(22, 32, 50); }
+    html.light .text-white\/40 { color: rgba(22, 32, 50, 0.45); }
+    html.light .text-white\/50 { color: rgba(22, 32, 50, 0.55); }
+    html.light .text-white\/60 { color: rgba(22, 32, 50, 0.65); }
+    html.light .text-white\/70 { color: rgba(22, 32, 50, 0.75); }
+    html.light .text-white\/80 { color: rgba(22, 32, 50, 0.85); }
+
+    /* Light Mode Select Option tags */
+    html.light select option {
+        background-color: #ffffff;
+        color: #162032;
+    }
+
+    /* Light Mode Global Input & Search Placeholder Color (Biru Tua) */
+    html.light input::placeholder,
+    html.light textarea::placeholder,
+    html.light select::placeholder,
+    html.light .input-debossed::placeholder,
+    html.light [placeholder]::placeholder {
+        color: #1e293b !important; /* Biru Tua Slate 800 */
+        opacity: 0.75 !important;
+    }
+
+    html.light input::-webkit-input-placeholder,
+    html.light textarea::-webkit-input-placeholder,
+    html.light .input-debossed::-webkit-input-placeholder,
+    html.light [placeholder]::-webkit-input-placeholder {
+        color: #1e293b !important;
+        opacity: 0.75 !important;
+    }
+
+    html.light input::-moz-placeholder,
+    html.light textarea::-moz-placeholder,
+    html.light .input-debossed::-moz-placeholder,
+    html.light [placeholder]::-moz-placeholder {
+        color: #1e293b !important;
+        opacity: 0.75 !important;
+    }
+
+    html.light ::-webkit-scrollbar-thumb {
+        background: rgba(31, 41, 55, 0.25);
+        border: 2px solid rgba(243, 245, 248, 0.6);
+    }
+    html.light ::-webkit-scrollbar-thumb:hover {
+        background: rgba(31, 41, 55, 0.4);
+    }
+
+    /* Liquid Glass Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        @apply bg-white/15 rounded-pill;
+        border: 2px solid rgba(22, 32, 50, 0.6);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-white/25;
+    }
+}
