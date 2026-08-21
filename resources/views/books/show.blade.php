@@ -2,44 +2,58 @@
     @section('page_title', $book->title)
 
     <div class="space-y-6" x-data="{ activeTab: 'items' }">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-                <div class="flex flex-wrap items-center gap-2">
-                    <x-badge variant="azure">{{ $book->book_code }}</x-badge>
-                    <x-badge variant="neutral">{{ $book->category->name ?? '-' }}</x-badge>
-                    @if ($book->is_active)
-                        <x-badge variant="success" dot>Aktif</x-badge>
+        <div class="glass-panel p-6 flex flex-col sm:flex-row gap-6 items-start justify-between">
+            <div class="flex flex-col sm:flex-row gap-5 items-start">
+                <div class="h-48 w-36 shrink-0 border-3 border-black bg-white overflow-hidden shadow-brutal flex items-center justify-center">
+                    @if($book->cover_url)
+                        <img src="{{ $book->cover_url }}" alt="{{ $book->title }}" class="h-full w-full object-cover" />
                     @else
-                        <x-badge variant="red" dot>Nonaktif</x-badge>
+                        <div class="text-center p-3 text-black/50">
+                            <span class="text-3xl block">📖</span>
+                            <span class="text-[10px] font-black uppercase tracking-wider mt-1 block">No Cover</span>
+                        </div>
                     @endif
                 </div>
-                <h2 class="mt-3 text-2xl font-bold text-pearl">{{ $book->title }}</h2>
-                <p class="mt-1 text-sm text-pearl/50">
-                    oleh {{ $book->author }} · {{ $book->publisher }} · {{ $book->publication_year }}
-                    @if ($book->rack_location) · Rak {{ $book->rack_location }} @endif
-                </p>
+
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <x-badge variant="azure">{{ $book->book_code }}</x-badge>
+                        <x-badge variant="neutral">{{ $book->category->name ?? '-' }}</x-badge>
+                        @if ($book->is_active)
+                            <x-badge variant="azure" dot>Aktif</x-badge>
+                        @else
+                            <x-badge variant="red" dot>Nonaktif</x-badge>
+                        @endif
+                    </div>
+                    <h2 class="mt-3 text-2xl font-black uppercase tracking-tight text-black font-heading">{{ $book->title }}</h2>
+                    <p class="mt-1 text-sm font-medium text-black/70">
+                        oleh <span class="text-black font-bold">{{ $book->author }}</span> · {{ $book->publisher }} · {{ $book->publication_year }}
+                        @if ($book->rack_location) · Rak <span class="border border-black bg-brutal-yellow px-1.5 py-0.5 font-mono font-black text-black">{{ $book->rack_location }}</span> @endif
+                    </p>
+                </div>
             </div>
-            <div class="flex flex-wrap gap-2">
-                <x-button href="{{ route('books.labels', $book) }}" target="_blank" variant="secondary" class="border-azure-soft/30 text-azure-soft hover:bg-azure-soft/10">
-                    🖨️ Cetak Label Barcode
+
+            <div class="flex flex-wrap gap-2 shrink-0">
+                <x-button href="{{ route('books.labels', $book) }}" target="_blank" variant="amber" class="shadow-brutal">
+                    🖨️ CETAK LABEL
                 </x-button>
-                <x-button href="{{ route('book-items.index', $book) }}" variant="secondary">Eksemplar</x-button>
-                <x-button href="{{ route('books.edit', $book) }}" variant="primary">Edit Buku</x-button>
+                <x-button href="{{ route('book-items.index', $book) }}" variant="secondary" class="shadow-brutal">EKSEMPLAR</x-button>
+                <x-button href="{{ route('books.edit', $book) }}" variant="primary" class="shadow-brutal">EDIT BUKU</x-button>
             </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div class="glass-panel rounded-4xl p-5">
-                <p class="text-sm text-pearl/50">Total Stok</p>
-                <p class="mt-1 text-3xl font-bold text-pearl">{{ $book->total_stock }}</p>
+            <div class="glass-panel p-5">
+                <p class="text-xs font-black uppercase tracking-wider text-black/60">Total Stok</p>
+                <p class="mt-1 font-mono text-3xl font-black text-black">{{ $book->total_stock }}</p>
             </div>
-            <div class="glass-panel rounded-4xl p-5">
-                <p class="text-sm text-pearl/50">Tersedia</p>
-                <p class="mt-1 text-3xl font-bold text-azure-soft">{{ $book->available_stock }}</p>
+            <div class="glass-panel p-5">
+                <p class="text-xs font-black uppercase tracking-wider text-black/60">Tersedia</p>
+                <p class="mt-1 font-mono text-3xl font-black text-black">{{ $book->available_stock }}</p>
             </div>
-            <div class="glass-panel rounded-4xl p-5">
-                <p class="text-sm text-pearl/50">Dipinjam</p>
-                <p class="mt-1 text-3xl font-bold text-amber-warm">{{ $book->items()->where('status', 'dipinjam')->count() }}</p>
+            <div class="glass-panel p-5">
+                <p class="text-xs font-black uppercase tracking-wider text-black/60">Dipinjam</p>
+                <p class="mt-1 font-mono text-3xl font-black text-black">{{ $book->items()->where('status', 'dipinjam')->count() }}</p>
             </div>
         </div>
 

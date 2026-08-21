@@ -9,6 +9,8 @@ use App\Services\CodeGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class BookController extends Controller
@@ -57,6 +59,14 @@ class BookController extends Controller
         );
         $data['total_stock'] = (int) $data['total_stock'];
 
+        if ($request->hasFile('cover_image')) {
+            File::ensureDirectoryExists(public_path('uploads/books'));
+            $file = $request->file('cover_image');
+            $filename = 'cover-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/books'), $filename);
+            $data['cover_image'] = 'uploads/books/' . $filename;
+        }
+
         Book::create($data);
 
         return redirect()->route('books.index')
@@ -86,6 +96,19 @@ class BookController extends Controller
     {
         $data = $this->validateData($request);
         $data['total_stock'] = (int) $data['total_stock'];
+
+        if ($request->hasFile('cover_image')) {
+            File::ensureDirectoryExists(public_path('uploads/books'));
+            $file = $request->file('cover_image');
+            $filename = 'cover-' . now()->format('YmdHis') . '-' . Str::random(6) . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/books'), $filename);
+
+            if ($book->cover_image && File::exists(public_path($book->cover_image))) {
+                File::delete(public_path($book->cover_image));
+            }
+
+            $data['cover_image'] = 'uploads/books/' . $filename;
+        }
 
         DB::transaction(function () use ($book, $data) {
             $book->update($data);
@@ -131,6 +154,10 @@ class BookController extends Controller
         if ($book->items()->where('status', 'dipinjam')->exists()) {
             return redirect()->route('books.index')
                 ->with('toast', ['type' => 'error', 'message' => 'Tidak bisa menghapus buku yang masih memiliki eksemplar dipinjam.']);
+        }
+
+        if ($book->cover_image && File::exists(public_path($book->cover_image))) {
+            File::delete(public_path($book->cover_image));
         }
 
         $book->delete();
@@ -243,6 +270,7 @@ class BookController extends Controller
             'publication_year' => ['required', 'string', 'size:4'],
             'rack_location' => ['nullable', 'string', 'max:50'],
             'total_stock' => ['required', 'integer', 'min:1', 'max:999'],
+            'cover_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
     }
 }

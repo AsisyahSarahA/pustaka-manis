@@ -17,7 +17,7 @@
                 type="button"
                 @click="setMode('manual')"
                 :class="mode === 'manual' ? 'bg-azure-soft text-navy-dark font-extrabold shadow-md' : 'text-pearl/70 hover:text-pearl font-medium'"
-                class="rounded-full px-3.5 py-1.5 text-xs transition-all duration-200"
+                class="rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 cursor-pointer"
             >
                 ⌨️ Input Manual / USB
             </button>
@@ -25,7 +25,7 @@
                 type="button"
                 @click="setMode('camera')"
                 :class="mode === 'camera' ? 'bg-azure-soft text-navy-dark font-extrabold shadow-md' : 'text-pearl/70 hover:text-pearl font-medium'"
-                class="rounded-full px-3.5 py-1.5 text-xs transition-all duration-200"
+                class="rounded-full px-3.5 py-1.5 text-xs transition-all duration-200 cursor-pointer"
             >
                 📷 Scan Kamera
             </button>
@@ -43,19 +43,19 @@
                 x-ref="manualInput"
                 @keydown.enter.prevent="handleEnter()"
                 placeholder="{{ $placeholder }}"
-                class="input-debossed w-full rounded-pill border-0 px-5 py-3 text-sm text-pearl placeholder-pearl/40 focus:ring-2 focus:ring-azure-soft/50"
+                class="input-debossed w-full rounded-pill border border-white/10 px-5 py-3 text-sm text-pearl placeholder-pearl/40 focus:ring-2 focus:ring-azure-soft/50"
                 @if($autofocus) autofocus @endif
             />
             <button
                 type="button"
                 @click="handleEnter()"
-                class="rounded-pill bg-azure-soft px-5 py-3 text-xs font-bold text-navy-dark hover:bg-azure-glow transition shrink-0"
+                class="rounded-pill bg-azure-soft px-5 py-3 text-xs font-bold text-navy-dark hover:bg-azure-glow transition shrink-0 cursor-pointer shadow-md active:scale-95"
             >
                 Cari 🔍
             </button>
         </div>
-        <p class="mt-1 text-[11px] text-pearl/40 px-2">
-            💡 Untuk USB Hardware Scanner, kursor otomatis `autofocus` dan auto-submit saat discan.
+        <p class="mt-1 text-[11px] text-pearl/50 px-2">
+            💡 Ketik kode & tekan <kbd class="px-1.5 py-0.5 rounded bg-white/10 font-mono text-[10px] text-azure-soft">Enter</kbd> atau scan via USB Barcode Scanner.
         </p>
     </div>
 
@@ -66,10 +66,10 @@
                 <p class="text-sm font-semibold text-pearl">📷 Kamera Siap Digunakan</p>
                 <p class="text-xs text-pearl/50">Klik tombol di bawah untuk mengaktifkan video kamera device.</p>
             </div>
-            <div x-show="cameraError" class="text-red-300 p-2 text-xs space-y-1 bg-red-500/10 rounded-2xl border border-red-500/20">
+            <div x-show="cameraError" class="text-red-300 p-3 text-xs space-y-1 bg-red-500/15 rounded-2xl border border-red-500/30">
                 <p class="font-bold">⚠️ Kendala Kamera:</p>
                 <p x-text="cameraError"></p>
-                <p class="text-[10px] text-pearl/50">Anda dapat menggunakan opsi "Upload Foto Barcode" di bawah jika kamera browser diblokir.</p>
+                <p class="text-[10px] text-pearl/60">Anda dapat menggunakan opsi "Upload Foto Barcode" di bawah jika kamera browser diblokir.</p>
             </div>
         </div>
 
@@ -78,7 +78,7 @@
                 type="button"
                 x-show="!isScanning"
                 @click="startCameraScanner()"
-                class="rounded-full bg-azure-soft/20 border border-azure-soft/40 py-2.5 px-3 text-xs font-bold text-azure-soft hover:bg-azure-soft/30 transition text-center"
+                class="rounded-full bg-azure-soft/20 border border-azure-soft/40 py-2.5 px-3 text-xs font-bold text-azure-soft hover:bg-azure-soft/30 transition text-center cursor-pointer active:scale-95 shadow-sm"
             >
                 ▶️ Buka Kamera Device
             </button>
@@ -86,12 +86,12 @@
                 type="button"
                 x-show="isScanning"
                 @click="stopCameraScanner()"
-                class="rounded-full bg-red-500/20 border border-red-500/40 py-2.5 px-3 text-xs font-bold text-red-300 hover:bg-red-500/30 transition text-center"
+                class="rounded-full bg-red-500/20 border border-red-500/40 py-2.5 px-3 text-xs font-bold text-red-300 hover:bg-red-500/30 transition text-center cursor-pointer active:scale-95 shadow-sm"
             >
                 ⏹️ Hentikan Kamera
             </button>
-            <label class="cursor-pointer rounded-full bg-white/5 border border-white/10 py-2.5 px-3 text-center text-xs font-bold text-pearl hover:bg-white/10 transition">
-                📁 Upload Foto Barcode
+            <label class="cursor-pointer rounded-full bg-white/10 border border-white/20 py-2.5 px-3 text-center text-xs font-bold text-pearl hover:bg-white/20 transition active:scale-95 shadow-sm flex items-center justify-center gap-1">
+                <span>📁 Upload Foto Barcode</span>
                 <input type="file" accept="image/*" class="hidden" @change="scanFromFile($event)" />
             </label>
         </div>
@@ -136,18 +136,25 @@
                 handleEnter() {
                     const val = this.code.trim();
                     if (!val) return;
+                    
+                    // Dispatch target-specific and general events
+                    this.$dispatch('scan-' + config.targetId, val);
                     this.$dispatch('barcode-scanned', val);
+                    
                     const inputEl = document.getElementById(config.targetId);
-                    if (inputEl && inputEl.form) {
-                        if (typeof inputEl.form.requestSubmit === 'function') {
-                            inputEl.form.requestSubmit();
+                    if (inputEl) {
+                        inputEl.value = val;
+                        inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+                        if (inputEl.form && typeof inputEl.form.requestSubmit === 'function') {
+                            // Don't submit full form on book scan
                         }
                     }
                 },
 
                 async startCameraScanner() {
-                    if (typeof Html5Qrcode === 'undefined') {
-                        this.cameraError = 'Library html5-qrcode belum dimuat. Periksa jaringan CDN.';
+                    const QrLib = window.Html5Qrcode || (typeof Html5Qrcode !== 'undefined' ? Html5Qrcode : null);
+                    if (!QrLib) {
+                        this.cameraError = 'Library pemindai kamera sedang dimuat, silakan coba sesaat lagi atau gunakan input manual.';
                         return;
                     }
 
@@ -158,7 +165,7 @@
                         await this.stopCameraScanner();
                     }
 
-                    this.html5QrcodeScanner = new Html5Qrcode(elementId);
+                    this.html5QrcodeScanner = new QrLib(elementId);
 
                     const qrCodeSuccessCallback = (decodedText) => {
                         this.onBarcodeDetected(decodedText);
@@ -170,7 +177,7 @@
                         let cameraConstraint = { facingMode: "environment" };
 
                         try {
-                            const devices = await Html5Qrcode.getCameras();
+                            const devices = await QrLib.getCameras();
                             if (devices && devices.length > 0) {
                                 const backCam = devices.find(d => 
                                     d.label.toLowerCase().includes('back') || 
@@ -216,13 +223,14 @@
                     const file = event.target.files[0];
                     if (!file) return;
 
-                    if (typeof Html5Qrcode === 'undefined') {
-                        alert('Library html5-qrcode belum dimuat.');
+                    const QrLib = window.Html5Qrcode || (typeof Html5Qrcode !== 'undefined' ? Html5Qrcode : null);
+                    if (!QrLib) {
+                        alert('Library barcode scanner belum siap.');
                         return;
                     }
 
                     const elementId = 'reader-' + config.targetId;
-                    const html5Qrcode = new Html5Qrcode(elementId);
+                    const html5Qrcode = new QrLib(elementId);
                     
                     html5Qrcode.scanFile(file, true)
                         .then(decodedText => {
@@ -235,6 +243,7 @@
 
                 onBarcodeDetected(decodedText) {
                     this.code = decodedText;
+                    this.$dispatch('scan-' + config.targetId, decodedText);
                     this.$dispatch('barcode-scanned', decodedText);
                     this.playBeepSound();
 

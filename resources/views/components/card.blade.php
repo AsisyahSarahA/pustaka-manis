@@ -1,18 +1,18 @@
 @props([
     'title' => null,
     'subtitle' => null,
-    'padding' => 'p-6',
+    'padding' => 'p-5',
 ])
 
-<div {{ $attributes->merge(['class' => 'glass-panel rounded-4xl']) }}>
+<div {{ $attributes->merge(['class' => 'brutal-card']) }}>
     @if ($title)
-        <div class="mb-5 flex items-center justify-between gap-4">
+        <div class="mb-4 flex items-center justify-between gap-4 border-b-3 border-black pb-3">
             <div>
                 @if ($title)
-                    <h3 class="text-lg font-bold text-pearl">{{ $title }}</h3>
+                    <h3 class="font-heading text-base font-black uppercase tracking-wide text-black">{{ $title }}</h3>
                 @endif
                 @if ($subtitle)
-                    <p class="mt-0.5 text-sm text-pearl/50">{{ $subtitle }}</p>
+                    <p class="mt-0.5 font-mono text-xs font-bold uppercase tracking-wider text-black/60">{{ $subtitle }}</p>
                 @endif
             </div>
             {{ $actions ?? '' }}
@@ -22,3 +22,4 @@
         {{ $slot }}
     </div>
 </div>
+

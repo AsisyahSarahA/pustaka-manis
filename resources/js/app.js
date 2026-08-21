@@ -2,8 +2,13 @@ import './bootstrap';
 
 import Alpine from 'alpinejs';
 import focus from '@alpinejs/focus';
+import { Html5Qrcode } from 'html5-qrcode';
+import Chart from 'chart.js/auto';
 
 window.Alpine = Alpine;
+window.Html5Qrcode = Html5Qrcode;
+window.Chart = Chart;
+
 Alpine.plugin(focus);
 
 // ==== Manajemen Tema (dark / light) ====
@@ -177,6 +182,18 @@ class SpaRouter {
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
+            // Re-execute scripts in replaced content
+            const scripts = currentMain.querySelectorAll('script');
+            scripts.forEach((oldScript) => {
+                const newScript = document.createElement('script');
+                Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+
+            // Dispatch custom event for page updates
+            document.dispatchEvent(new CustomEvent('page:loaded'));
+
             if (window.Alpine) {
                 window.Alpine.initTree(currentMain);
             }
@@ -191,8 +208,6 @@ class SpaRouter {
 }
 
 new SpaRouter();
-
-Alpine.start();
 
 Alpine.data('liveTable', (url) => ({
     loading: false,
@@ -249,3 +264,5 @@ Alpine.data('liveTable', (url) => ({
         }
     },
 }));
+
+Alpine.start();

@@ -6,43 +6,51 @@
         x-init="init()"
         class="mx-auto max-w-4xl space-y-6"
     >
-        <div class="glass-panel rounded-4xl p-6">
-            <h2 class="mb-4 text-lg font-bold text-pearl">Pindai / Cari Kartu Anggota</h2>
+        <div class="glass-panel p-6">
+            <div class="mb-4 flex items-center justify-between border-b-2 border-black pb-3">
+                <h2 class="text-sm font-black uppercase tracking-wider text-black font-heading flex items-center gap-2">
+                    <span class="flex h-7 w-7 items-center justify-center border-2 border-black bg-brutal-yellow text-black text-xs font-mono font-black shadow-brutal-sm">📥</span>
+                    Pindai Barcode Buku atau Kartu Anggota
+                </h2>
+                @if ($member)
+                    <x-button href="{{ route('loans.return') }}" variant="secondary" class="text-xs shadow-brutal-sm">
+                        🔄 Scan Buku / Anggota Lain
+                    </x-button>
+                @endif
+            </div>
 
             <x-smart-scanner 
                 name="member_return_code" 
                 id="memberScanInput" 
-                placeholder="Scan barcode / ketik NISN / NIP / Kode Anggota..." 
-                label="Identitas Peminjam"
+                placeholder="Scan barcode buku / ketik kode eksemplar / NISN / NIP..." 
+                label="Identitas / Barcode Buku yang Dikembalikan"
             />
 
-            <p x-show="memberError" x-cloak class="mt-4 rounded-2xl bg-danger-soft/20 p-3 text-xs text-danger-red border border-danger-red/30" x-text="memberError"></p>
+            <p x-show="memberError" x-cloak class="mt-4 border-2 border-black bg-brutal-pink p-3 text-xs font-black uppercase text-white shadow-brutal-sm" x-text="memberError"></p>
         </div>
 
         @if ($member)
-            <div class="glass-panel rounded-4xl p-6">
-                <div class="mb-5 flex items-center justify-between gap-4 border-b border-white/10 pb-4">
+            <div class="glass-panel p-6">
+                <div class="mb-5 flex items-center justify-between gap-4 border-b-2 border-black pb-4">
                     <div class="flex items-center gap-4">
-                        <div class="flex h-14 w-14 items-center justify-center rounded-full bg-azure-soft/15 text-xl font-bold text-azure-soft ring-2 ring-azure-soft/30">
+                        <div class="flex h-14 w-14 items-center justify-center border-2 border-black bg-brutal-yellow text-xl font-black font-mono text-black shadow-brutal-sm">
                             {{ strtoupper(substr($member->name, 0, 1)) }}
                         </div>
                         <div>
-                            <p class="font-bold text-pearl text-base">{{ $member->name }}</p>
-                            <p class="text-xs text-pearl/60">
+                            <p class="font-black text-black text-base uppercase font-heading">{{ $member->name }}</p>
+                            <p class="font-mono text-xs font-bold text-black/70">
                                 {{ $member->member_code }} · {{ $member->type_label }}
                                 @if ($member->department_class) · {{ $member->department_class }} @endif
                             </p>
                         </div>
                     </div>
-                    <x-button href="{{ route('loans.return') }}" variant="secondary" class="text-xs">
-                        🔄 Cari Anggota Lain
-                    </x-button>
                 </div>
 
                 @if ($loans->isEmpty())
-                    <div class="rounded-3xl border border-dashed border-white/10 p-10 text-center">
+                    <div class="border-2 border-dashed border-black bg-brutal-input p-10 text-center">
                         <p class="text-3xl">🎉</p>
-                        <p class="mt-2 text-xs text-pearl/50">Tidak ada pinjaman aktif yang menunggak untuk anggota ini.</p>
+                        <p class="mt-2 text-xs font-black uppercase text-black font-heading">Tidak Ada Pinjaman Aktif</p>
+                        <p class="text-xs font-medium text-black/60 mt-1">Semua buku telah dikembalikan oleh anggota ini.</p>
                     </div>
                 @else
                     <form method="POST" action="{{ route('loans.return.store') }}" x-data="{ selected: [], fine: null }">
@@ -51,47 +59,52 @@
 
                         <div class="space-y-6">
                             @foreach ($loans as $loan)
-                                <div class="rounded-3xl border border-white/10 bg-white/5 p-5 space-y-3">
-                                    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-2">
+                                <div class="border-3 border-black bg-brutal-input p-5 shadow-brutal-sm space-y-3">
+                                    <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-black pb-2">
                                         <div>
-                                            <span class="font-mono text-sm font-bold text-azure-soft">{{ $loan->loan_code }}</span>
-                                            <span class="ml-2 text-xs text-pearl/50">
+                                            <span class="font-mono text-sm font-black text-black">{{ $loan->loan_code }}</span>
+                                            <span class="ml-2 font-mono text-xs font-bold text-black/70">
                                                 Jt Tempo: {{ \Carbon\Carbon::parse($loan->due_date)->format('d M Y') }}
                                             </span>
                                         </div>
                                         @if ($loan->is_late)
                                             <x-badge variant="red" dot>Terlambat {{ $loan->late_days }} Hari</x-badge>
                                         @else
-                                            <x-badge variant="success" dot>Status Berjalan</x-badge>
+                                            <x-badge variant="azure" dot>Status Berjalan</x-badge>
                                         @endif
                                     </div>
 
                                     <div class="space-y-2">
                                         @foreach ($loan->items as $item)
-                                            <div class="flex flex-col gap-3 rounded-2xl bg-white/5 p-4 sm:flex-row sm:items-center justify-between border border-white/5">
+                                            <div class="flex flex-col gap-3 border-2 border-black bg-white p-4 sm:flex-row sm:items-center justify-between shadow-brutal-sm">
                                                 <label class="flex flex-1 items-center gap-3 cursor-pointer">
                                                     <input
                                                         type="checkbox"
                                                         name="returned[]"
                                                         value="{{ $item->id }}"
                                                         @checked(!$item->bookItem || $item->status === 'dipinjam')
-                                                        class="h-5 w-5 rounded border-white/20 bg-white/10 text-azure-soft focus:ring-azure-soft"
+                                                        class="h-5 w-5 border-2 border-black text-black focus:ring-black accent-black cursor-pointer"
                                                     />
+                                                    @if($item->bookItem?->book?->cover_url)
+                                                        <img src="{{ $item->bookItem->book->cover_url }}" class="h-12 w-9 object-cover border-2 border-black shadow-brutal-sm" />
+                                                    @else
+                                                        <span class="flex h-12 w-9 items-center justify-center border-2 border-black bg-brutal-input text-base">📖</span>
+                                                    @endif
                                                     <div>
-                                                        <span class="block text-sm font-semibold text-pearl">{{ $item->bookItem?->book?->title ?? '-' }}</span>
-                                                        <span class="font-mono text-xs text-azure-soft">{{ $item->bookItem?->item_code }}</span>
+                                                        <span class="block text-sm font-black uppercase text-black font-heading">{{ $item->bookItem?->book?->title ?? '-' }}</span>
+                                                        <span class="font-mono text-xs font-bold text-black/70">{{ $item->bookItem?->item_code }}</span>
                                                     </div>
                                                 </label>
 
                                                 <div class="flex items-center gap-2">
-                                                    <span class="text-xs text-pearl/50">Kondisi Akhir:</span>
+                                                    <span class="text-xs font-black uppercase text-black">Kondisi Akhir:</span>
                                                     <select
                                                         name="condition[{{ $item->id }}]"
-                                                        class="input-debossed rounded-pill border-0 px-4 py-2 text-xs text-pearl"
+                                                        class="input-debossed border-2 border-black bg-white px-3 py-2 text-xs font-bold text-black cursor-pointer"
                                                     >
-                                                        <option value="baik">✅ Baik</option>
-                                                        <option value="rusak">⚠️ Rusak</option>
-                                                        <option value="hilang">❌ Hilang</option>
+                                                        <option value="baik" @selected($item->condition === 'baik')>Baik</option>
+                                                        <option value="rusak" @selected($item->condition === 'rusak')>Rusak</option>
+                                                        <option value="hilang" @selected($item->condition === 'hilang')>Hilang</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -101,9 +114,33 @@
                             @endforeach
                         </div>
 
-                        <div class="mt-6 flex items-center justify-end gap-3">
-                            <x-button href="{{ route('loans.return') }}" variant="secondary">Batal</x-button>
-                            <x-button type="submit" variant="primary" class="px-8 font-bold">PROSES PENGEMBALIAN BUKU ➔</x-button>
+                        {{-- Panel Pembayaran Denda (Jika Ada) --}}
+                        @if ($totalFine > 0)
+                            <div class="mt-6 border-3 border-black bg-brutal-pink/20 p-5 shadow-brutal">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-black uppercase text-black">Kalkulasi Denda Keterlambatan</p>
+                                        <p class="font-mono text-2xl font-black text-black">Rp {{ number_format($totalFine, 0, ',', '.') }}</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <label class="btn-brutal inline-flex items-center gap-2 border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-wider cursor-pointer shadow-brutal-sm">
+                                            <input type="radio" name="fine_action" value="pay" checked class="accent-black" />
+                                            <span>Bayar Lunas</span>
+                                        </label>
+                                        <label class="btn-brutal inline-flex items-center gap-2 border-2 border-black bg-white px-3 py-2 text-xs font-black uppercase tracking-wider cursor-pointer shadow-brutal-sm">
+                                            <input type="radio" name="fine_action" value="waive" class="accent-black" />
+                                            <span>Bebaskan (Dispensasi)</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="mt-6 flex justify-end gap-3 pt-3">
+                            <x-button href="{{ route('loans.return') }}" variant="secondary" class="shadow-brutal">Batal</x-button>
+                            <x-button type="submit" variant="primary" class="shadow-brutal px-8 py-3 text-xs font-black">
+                                PROSES PENGEMBALIAN BUKU ➔
+                            </x-button>
                         </div>
                     </form>
                 @endif
@@ -120,40 +157,46 @@
                     memberError: null,
 
                     init() {
-                        window.addEventListener('barcode-scanned', (e) => {
-                            this.scanMember(e.detail);
-                        });
+                        const inputEl = document.getElementById('memberScanInput');
+                        if (inputEl) inputEl.focus();
+
+                        const handleScan = (e) => {
+                            const val = e.detail?.code || e.detail?.barcode || e.detail;
+                            if (val) this.search(val);
+                        };
+
+                        window.addEventListener('scan-memberScanInput', handleScan);
+                        window.addEventListener('barcode-scanned', handleScan);
                     },
 
-                    async scanMember(manualCode = null) {
-                        const inputEl = document.getElementById('memberScanInput');
-                        const code = manualCode || (inputEl ? inputEl.value.trim() : '');
-                        if (!code) return;
-
+                    search(query) {
+                        if (!query) return;
                         this.memberError = null;
 
-                        try {
-                            const res = await fetch(`{{ route('loans.return.api.member') }}?code=${encodeURIComponent(code)}`);
-                            const data = await res.json();
-
-                            if (!data.found) {
-                                this.memberError = data.message;
-                                return;
-                            }
-
-                            window.location.href = data.redirect;
-                        } catch (e) {
-                            this.memberError = 'Gagal terhubung ke server.';
-                        }
+                        const url = '{{ route("loans.return.api.member") }}?query=' + encodeURIComponent(query);
+                        fetch(url)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.found && data.member) {
+                                    window.location.href = '{{ route("loans.return") }}?member_id=' + data.member.id;
+                                } else {
+                                    this.memberError = data.message || 'Data anggota atau buku aktif tidak ditemukan.';
+                                }
+                            })
+                            .catch(() => {
+                                this.memberError = 'Gagal memproses pemindaian. Coba lagi.';
+                            });
                     }
                 }));
             };
 
-            if (window.Alpine) {
-                window.registerReturnApp();
-            } else {
-                document.addEventListener('alpine:init', window.registerReturnApp);
-            }
+            window.registerReturnApp();
         }
+
+        document.addEventListener('page:loaded', () => {
+            if (typeof window.registerReturnApp === 'function') {
+                window.registerReturnApp();
+            }
+        });
     </script>
 </x-layouts.app>

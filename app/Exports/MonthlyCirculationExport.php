@@ -57,8 +57,8 @@ class MonthlyCirculationExport implements FromCollection, WithHeadings, WithStyl
     public function headings(): array
     {
         return [
-            ['LAPORAN SIRKULASI BULANAN PERPUSTAKAAN'],
-            ['Periode: ' . ($this->data['month_name'] ?? '')],
+            ['LAPORAN SIRKULASI PERPUSTAKAAN'],
+            ['Periode: ' . ($this->data['period_label'] ?? $this->data['month_name'] ?? '')],
             [''],
             ['No', 'Kode Pinjam', 'Nama Anggota', 'Kategori / Kelas', 'Tgl Pinjam', 'Jatuh Tempo', 'Status', 'Jumlah Buku']
         ];

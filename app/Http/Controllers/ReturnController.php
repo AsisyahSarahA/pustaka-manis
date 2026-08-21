@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BookItem;
 use App\Models\Loan;
 use App\Models\LoanItem;
 use App\Models\Member;
@@ -37,18 +38,55 @@ class ReturnController extends Controller
     }
 
     /**
-     * Endpoint AJAX: scan anggota pada layar pengembalian.
+     * Endpoint AJAX: scan barcode buku / kartu anggota pada layar pengembalian.
      */
     public function searchMember(Request $request): JsonResponse
     {
         $code = trim((string) $request->query('code', ''));
 
+        if ($code === '') {
+            return response()->json(['found' => false, 'message' => 'Silakan scan barcode buku atau ketik identitas.'], 422);
+        }
+
+        // 1. Cek apakah yang discan adalah kartu anggota / nomor identitas
         $member = Member::where('identity_number', $code)
             ->orWhere('member_code', $code)
             ->first();
 
+        // 2. Cek apakah yang discan adalah barcode / kode eksemplar buku yang sedang dipinjam
         if (!$member) {
-            return response()->json(['found' => false, 'message' => 'Kode tidak ditemukan.'], 404);
+            $bookItem = BookItem::where('barcode', $code)
+                ->orWhere('item_code', $code)
+                ->first();
+
+            if ($bookItem) {
+                $activeLoanItem = LoanItem::where('book_item_id', $bookItem->id)
+                    ->where('status', 'dipinjam')
+                    ->with('loan.member')
+                    ->latest('id')
+                    ->first();
+
+                if ($activeLoanItem && $activeLoanItem->loan && $activeLoanItem->loan->member) {
+                    $member = $activeLoanItem->loan->member;
+                } else {
+                    return response()->json([
+                        'found' => false,
+                        'message' => "Buku '{$bookItem->item_code}' ({$bookItem->book?->title}) tidak sedang dalam status dipinjam.",
+                    ], 404);
+                }
+            }
+        }
+
+        // 3. Cek apakah yang discan adalah kode transaksi pinjam
+        if (!$member) {
+            $loan = Loan::where('loan_code', $code)->with('member')->first();
+            if ($loan && $loan->member) {
+                $member = $loan->member;
+            }
+        }
+
+        if (!$member) {
+            return response()->json(['found' => false, 'message' => "Kode '{$code}' tidak ditemukan sebagai buku dipinjam atau kartu anggota."], 404);
         }
 
         $activeCount = $member->loans()

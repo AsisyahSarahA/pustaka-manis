@@ -7,22 +7,25 @@
 
 @php
     $variants = [
-        'primary' => 'bg-azure-soft text-navy-deep shadow-tactile hover:bg-azure-soft/90',
-        'secondary' => 'bg-white/10 text-pearl border border-white/20 shadow-glass hover:bg-white/15',
-        'danger' => 'bg-danger-red text-white shadow-tactile hover:bg-danger-red/90',
-        'amber' => 'bg-amber-warm text-navy-deep shadow-tactile hover:bg-amber-warm/90',
+        'primary' => 'bg-brutal-neon text-black',
+        'secondary' => 'bg-white text-black',
+        'danger' => 'bg-brutal-pink text-white',
+        'amber' => 'bg-brutal-yellow text-black',
+        'yellow' => 'bg-brutal-yellow text-black',
+        'blue' => 'bg-brutal-blue text-white',
     ];
-    $classes = 'btn-skeuo inline-flex items-center justify-center gap-2 rounded-pill px-5 py-2.5 text-sm font-semibold transition-transform duration-150 active:translate-y-px disabled:opacity-50 disabled:pointer-events-none ' . ($variants[$variant] ?? $variants['primary']);
+    $classes = 'btn-brutal inline-flex items-center justify-center gap-2 border-3 border-black px-5 py-2.5 text-xs font-extrabold uppercase tracking-wider disabled:opacity-50 disabled:pointer-events-none ' . ($variants[$variant] ?? $variants['primary']);
 @endphp
 
 @if ($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $classes]) }}>
-        @if ($icon)<span class="h-4 w-4">{!! $icon !!}</span>@endif
+        @if ($icon)<span class="h-4 w-4 shrink-0">{!! $icon !!}</span>@endif
         {{ $slot }}
     </a>
 @else
     <button type="{{ $type }}" {{ $attributes->merge(['class' => $classes]) }}>
-        @if ($icon)<span class="h-4 w-4">{!! $icon !!}</span>@endif
+        @if ($icon)<span class="h-4 w-4 shrink-0">{!! $icon !!}</span>@endif
         {{ $slot }}
     </button>
 @endif
+

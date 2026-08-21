@@ -59,9 +59,21 @@ class DashboardController extends Controller
             ->groupBy('borrow_date')
             ->pluck('total', 'borrow_date');
 
+        $data = $days->map(fn ($d) => (int) ($rows[$d] ?? 0))->values();
+        $labels = $days->map(fn ($d) => Carbon::parse($d)->translatedFormat('d M'))->values();
+        $total = $data->sum();
+        $avg = round($total / 7, 1);
+
+        $maxVal = $data->max();
+        $maxIdx = $data->search($maxVal);
+        $peakDay = $maxVal > 0 && $maxIdx !== false ? $labels[$maxIdx] . " ({$maxVal} buku)" : '-';
+
         return [
-            'labels' => $days->map(fn ($d) => Carbon::parse($d)->format('d M'))->values(),
-            'data' => $days->map(fn ($d) => (int) ($rows[$d] ?? 0))->values(),
+            'labels' => $labels,
+            'data' => $data,
+            'total_7_days' => $total,
+            'avg_per_day' => $avg,
+            'peak_day' => $peakDay,
         ];
     }
 
@@ -73,9 +85,21 @@ class DashboardController extends Controller
             ->groupBy('visit_date')
             ->pluck('total', 'visit_date');
 
+        $data = $days->map(fn ($d) => (int) ($rows[$d] ?? 0))->values();
+        $labels = $days->map(fn ($d) => Carbon::parse($d)->translatedFormat('d M'))->values();
+        $total = $data->sum();
+        $avg = round($total / 7, 1);
+
+        $maxVal = $data->max();
+        $maxIdx = $data->search($maxVal);
+        $peakDay = $maxVal > 0 && $maxIdx !== false ? $labels[$maxIdx] . " ({$maxVal} pengunjung)" : '-';
+
         return [
-            'labels' => $days->map(fn ($d) => Carbon::parse($d)->format('d M'))->values(),
-            'data' => $days->map(fn ($d) => (int) ($rows[$d] ?? 0))->values(),
+            'labels' => $labels,
+            'data' => $data,
+            'total_7_days' => $total,
+            'avg_per_day' => $avg,
+            'peak_day' => $peakDay,
         ];
     }
 
@@ -91,9 +115,25 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        $colors = ['#97DDE9', '#CFEBFF', '#FBBF24', '#F87171', '#A78BFA'];
+        $totalAll = $rows->sum('total');
+
+        $items = $rows->map(function ($row, $index) use ($colors, $totalAll) {
+            $count = (int) $row->total;
+            $percentage = $totalAll > 0 ? round(($count / $totalAll) * 100, 1) : 0;
+            return [
+                'name' => $row->category,
+                'total' => $count,
+                'percentage' => $percentage,
+                'color' => $colors[$index % count($colors)],
+            ];
+        });
+
         return [
             'labels' => $rows->pluck('category')->values(),
             'data' => $rows->pluck('total')->map(fn ($v) => (int) $v)->values(),
+            'total_all' => $totalAll,
+            'items' => $items,
         ];
     }
 }

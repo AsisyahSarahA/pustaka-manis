@@ -23,8 +23,11 @@
     </div>
 
     <div class="glass-panel overflow-hidden rounded-4xl">
-        <div class="p-5">
+        <div class="p-5 flex items-center justify-between">
             <h3 class="font-bold text-pearl">Rincian Peminjaman ({{ $loans->count() }})</h3>
+            @if(isset($period_label))
+                <span class="text-xs text-pearl/50">Periode: {{ $period_label }}</span>
+            @endif
         </div>
         <x-table :headers="['No. Transaksi', 'Peminjam', 'Kelas', 'Tanggal', 'Jatuh Tempo', 'Buku', 'Status']">
             @forelse ($loans as $loan)
@@ -47,7 +50,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="px-4 py-10 text-center text-pearl/40">Tidak ada data pada bulan ini.</td>
+                    <td colspan="7" class="px-4 py-10 text-center text-pearl/40">Tidak ada data sirkulasi pada periode ini.</td>
                 </tr>
             @endforelse
         </x-table>

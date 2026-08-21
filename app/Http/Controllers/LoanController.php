@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\BookItem;
 use App\Models\Loan;
 use App\Models\LoanItem;
@@ -57,6 +58,10 @@ class LoanController extends Controller
         $code = trim((string) $request->query('code', ''));
         $type = $request->query('type');
 
+        if ($code === '') {
+            return response()->json(['found' => false, 'message' => 'Silakan ketik atau scan kode anggota/NISN/NIP.'], 422);
+        }
+
         $query = Member::query();
         if ($type) {
             $query->where('type', $type);
@@ -67,10 +72,17 @@ class LoanController extends Controller
               ->orWhere('member_code', $code);
         })->first();
 
+        // Fallback jika tipe tidak cocok dengan kategori yang dipilih
+        if (!$member && $type) {
+            $member = Member::where('identity_number', $code)
+                ->orWhere('member_code', $code)
+                ->first();
+        }
+
         if (!$member) {
             return response()->json([
                 'found' => false,
-                'message' => 'Kode tidak ditemukan. Pastikan kartu anggota valid.',
+                'message' => "Anggota dengan kode/NISN/NIP '{$code}' tidak ditemukan.",
             ], 404);
         }
 
@@ -83,6 +95,7 @@ class LoanController extends Controller
                 'name' => $member->name,
                 'member_code' => $member->member_code,
                 'type' => $member->type_label,
+                'raw_type' => $member->type,
                 'department_class' => $member->department_class,
                 'is_active' => $member->is_active,
                 'active_loans' => LoanService::activeLoanCount($member),
@@ -95,30 +108,49 @@ class LoanController extends Controller
     }
 
     /**
-     * Endpoint AJAX: Scan barcode/kode eksemplar -> data buku.
+     * Endpoint AJAX: Scan barcode/kode eksemplar atau kode buku -> data buku.
      */
     public function searchBook(Request $request): JsonResponse
     {
         $code = trim((string) $request->query('code', ''));
 
         if ($code === '') {
-            return response()->json(['found' => false, 'message' => 'Kode kosong.'], 422);
+            return response()->json(['found' => false, 'message' => 'Kode buku kosong.'], 422);
         }
 
-        $item = BookItem::with('book')
+        // 1. Cari berdasarkan barcode atau kode eksemplar
+        $item = BookItem::with('book.category')
             ->where('barcode', $code)
             ->orWhere('item_code', $code)
             ->first();
 
+        // 2. Jika tidak ditemukan, cari berdasarkan kode induk buku atau judul
         if (!$item) {
-            return response()->json(['found' => false, 'message' => 'Kode tidak ditemukan.'] , 404);
+            $book = Book::with(['category', 'items' => fn ($q) => $q->where('status', 'tersedia')])
+                ->where('book_code', $code)
+                ->orWhere('title', $code)
+                ->first();
+
+            if ($book) {
+                $item = $book->items->first();
+                if (!$item) {
+                    return response()->json([
+                        'found' => false,
+                        'message' => "Buku '{$book->title}' ditemukan tetapi seluruh eksemplar sedang tidak tersedia.",
+                    ], 422);
+                }
+            }
+        }
+
+        if (!$item) {
+            return response()->json(['found' => false, 'message' => "Buku dengan kode '{$code}' tidak ditemukan."], 404);
         }
 
         if (!$item->isAvailable()) {
             $statusLabel = $item->status_label . ($item->condition !== 'baik' ? " ({$item->condition_label})" : '');
             return response()->json([
                 'found' => false,
-                'message' => "Buku ini sedang {$statusLabel}. Tidak bisa dipinjam saat ini.",
+                'message' => "Eksemplar '{$item->item_code}' ({$item->book->title}) sedang {$statusLabel}. Tidak bisa dipinjam.",
             ], 422);
         }
 
@@ -132,6 +164,7 @@ class LoanController extends Controller
                 'author' => $item->book->author,
                 'book_code' => $item->book->book_code,
                 'category' => $item->book->category?->name,
+                'cover_url' => $item->book->cover_url,
             ],
         ]);
     }

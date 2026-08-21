@@ -9,22 +9,28 @@
 
     <div
         x-show="open"
-        x-transition.opacity
-        class="fixed inset-0 z-50 flex items-center justify-center bg-navy-deep/70 p-4 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4 brutal-backdrop"
         @click="open = false"
     >
         <div
-            class="glass-panel w-full {{ $maxWidth }} rounded-5xl p-6"
+            class="w-full {{ $maxWidth }} border-4 border-black bg-white p-0 shadow-brutal-xl text-black"
             @click.stop
             x-trap.noscroll="open"
         >
             @if ($title)
-                <div class="mb-4 flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-pearl">{{ $title }}</h3>
-                    <button @click="open = false" class="rounded-xl p-2 text-pearl/50 transition hover:bg-white/5 hover:text-pearl"><x-icon name="x" class="h-4 w-4" /></button>
+                <div class="flex items-center justify-between border-b-4 border-black bg-black px-5 py-3 text-white">
+                    <h3 class="font-heading text-sm font-black uppercase tracking-wider text-brutal-yellow">
+                        [SYSTEM WINDOW] :: {{ $title }}
+                    </h3>
+                    <button @click="open = false" class="btn-skeuo border-2 border-white bg-brutal-pink px-2 py-0.5 font-mono text-xs font-black text-white hover:bg-white hover:text-black">
+                        [X]
+                    </button>
                 </div>
             @endif
-            {{ $slot }}
+            <div class="p-6">
+                {{ $slot }}
+            </div>
         </div>
     </div>
 </div>
+

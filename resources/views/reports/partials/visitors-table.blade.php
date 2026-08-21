@@ -1,7 +1,11 @@
 <div class="glass-panel overflow-hidden rounded-4xl">
     <div class="flex items-center justify-between p-5">
         <h3 class="font-bold text-pearl">Daftar Kunjungan ({{ $visitors->count() }})</h3>
-        <span class="text-xs text-pearl/40">Periode: {{ \Carbon\Carbon::parse($start)->format('d M Y') }} — {{ \Carbon\Carbon::parse($end)->format('d M Y') }}</span>
+        @if (!empty($period_label))
+            <span class="text-xs text-pearl/50">Periode: {{ $period_label }}</span>
+        @else
+            <span class="text-xs text-pearl/50">Periode: {{ \Carbon\Carbon::parse($start)->format('d M Y') }} — {{ \Carbon\Carbon::parse($end)->format('d M Y') }}</span>
+        @endif
     </div>
     <x-table :headers="['Tanggal', 'Jam', 'Tipe', 'Nama', 'Instansi / Kelas', 'Tujuan']">
         @forelse ($visitors as $visitor)

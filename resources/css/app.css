@@ -1,30 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-    /* ==== Tema Default (Gelap) ==== */
     :root {
-        --navy-base: 22 32 50;
-        --navy-soft: 42 59 84;
-        --navy-deep: 15 23 36;
-        --pearl: 244 247 246;
-        --azure-soft: 151 221 233;
-        --azure-light: 207 235 255;
-        --amber-warm: 251 191 36;
-        --danger-red: 248 113 113;
-    }
-
-    /* ==== Tema Terang ==== */
-    html.light {
-        --navy-base: 243 245 248;
-        --navy-soft: 255 255 255;
-        --navy-deep: 28 37 54;
-        --pearl: 22 32 50;
-        --azure-soft: 14 165 180;
-        --azure-light: 56 189 248;
-        --amber-warm: 180 120 10;
-        --danger-red: 220 38 38;
+        --paper: #F4F4F0;
+        --ink: #000000;
+        --yellow: #FFDE00;
+        --neon: #00FF66;
+        --pink: #FF003C;
+        --blue: #0066FF;
     }
 
     html {
@@ -32,175 +19,167 @@
     }
 
     body {
-        @apply bg-navy-base text-pearl font-sans antialiased;
+        background-color: #F4F4F0;
+        color: #000000;
+        font-family: 'Inter', sans-serif;
+        background-image: 
+            linear-gradient(to right, rgba(0, 0, 0, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+        background-size: 24px 24px;
+        -webkit-font-smoothing: antialiased;
     }
 
-    /* ==== Top SPA Progress Bar ==== */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Space Grotesk', 'Archivo Black', sans-serif;
+        letter-spacing: -0.02em;
+        text-transform: uppercase;
+    }
+
+    /* Mechanical Top SPA Progress Bar */
     #top-progress-bar {
         position: fixed;
         top: 0;
         left: 0;
-        height: 3px;
+        height: 5px;
         width: 0%;
-        background: linear-gradient(90deg, #0ea5b4, #97dde9, #cfebff);
+        background: #FFDE00;
+        border-bottom: 2px solid #000000;
         z-index: 9999;
-        transition: width 200ms ease-out, opacity 200ms ease-in;
-        box-shadow: 0 0 10px rgba(151, 221, 233, 0.8), 0 0 5px rgba(14, 165, 180, 0.8);
+        transition: width 75ms linear, opacity 75ms linear;
     }
 }
 
 @layer components {
-    /* Liquid Glass Panel — background solid (tanpa backdrop-blur) agar ringan.
-       Backdrop-blur hanya dipakai di sidebar & header yang layernya statis. */
-    .glass-panel {
-        @apply bg-navy-soft/80 border border-white/15;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    /* Brutalist Card & Panel Containers (No blur, solid background, 3px solid border, 5px hard shadow) */
+    .glass-panel,
+    .glass-panel-blur,
+    .brutal-card {
+        background-color: #FFFFFF;
+        border: 3px solid #000000;
+        box-shadow: 5px 5px 0px 0px #000000;
+        color: #000000;
     }
 
-    /* Panel dengan efek blur sungguhan (hanya untuk elemen besar statis) */
-    .glass-panel-blur {
-        @apply bg-navy-soft/95 border border-white/10 backdrop-blur-liquid;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-    }
-
-    /* Floating Sidebar & Main Layout Alignment */
+    /* Structural Layout Alignment */
     .layout-sidebar {
-        @apply glass-panel-blur fixed top-4 bottom-4 left-4 z-40 flex w-64 flex-col overflow-hidden rounded-4xl p-4 transition-transform duration-300 lg:top-6 lg:bottom-6 lg:left-6;
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 40;
+        display: flex;
+        width: 17rem; /* 272px */
+        flex-direction: column;
+        background-color: #F4F4F0;
+        border-right: 4px solid #000000;
+        padding: 1.25rem;
+        transition: transform 75ms ease-linear;
     }
+
     .layout-main {
-        @apply flex min-h-screen w-full min-w-0 flex-col;
+        display: flex;
+        min-height: 100vh;
+        width: 100%;
+        min-width: 0;
+        flex-direction: column;
     }
+
     @media (min-width: 1024px) {
         .layout-main {
-            padding-left: 18.5rem; /* 296px: 24px left + 256px sidebar + 16px gap */
+            padding-left: 17rem;
         }
     }
 
-    /* Skeuomorphic Tactile Button (Press effect) */
-    .btn-skeuo {
-        transition: all 150ms ease;
-    }
-    .btn-skeuo:active {
-        box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.1);
-        transform: translateY(1px);
+    /* Mechanical Tactile Buttons */
+    .btn-skeuo,
+    .btn-brutal {
+        border: 3px solid #000000;
+        box-shadow: 4px 4px 0px 0px #000000;
+        transition: transform 75ms ease-linear, box-shadow 75ms ease-linear, background-color 75ms ease-linear;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
-    /* Debossed Form Input */
-    .input-debossed {
-        @apply bg-navy-soft/70 text-pearl placeholder-pearl/40;
-        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+    .btn-skeuo:hover:not(:disabled),
+    .btn-brutal:hover:not(:disabled) {
+        transform: translate(-2px, -2px);
+        box-shadow: 6px 6px 0px 0px #000000;
     }
+
+    .btn-skeuo:active:not(:disabled),
+    .btn-brutal:active:not(:disabled) {
+        transform: translate(4px, 4px);
+        box-shadow: 0px 0px 0px 0px #000000;
+    }
+
+    /* Raw Debossed Form Inputs */
+    .input-debossed {
+        background-color: #EAEAE5;
+        border: 3px solid #000000;
+        color: #000000;
+        font-weight: 600;
+        border-radius: 0px !important;
+        transition: background-color 75ms ease-linear, box-shadow 75ms ease-linear;
+    }
+
+    .input-debossed::placeholder {
+        color: #000000;
+        opacity: 0.5;
+        font-weight: 500;
+    }
+
     .input-debossed:focus {
         outline: none;
-        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.2),
-            0 0 0 2px rgba(151, 221, 233, 0.4);
+        background-color: #FFFFFF;
+        border-color: #000000;
+        box-shadow: 4px 4px 0px 0px #0066FF;
     }
 
-    /* ==== Penyesuaian Tema Terang ==== */
-    html.light body {
-        @apply bg-navy-base text-pearl;
+    /* Checked Out Rubber Stamp */
+    .stamp-checked-out {
+        position: absolute;
+        top: 25%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-12deg);
+        border: 4px solid #FF003C;
+        background-color: #FFDE00;
+        color: #FF003C;
+        font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 900;
+        padding: 4px 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        box-shadow: 4px 4px 0px 0px #000000;
+        z-index: 20;
+        pointer-events: none;
+        white-space: nowrap;
     }
 
-    html.light .mesh-gradient,
-    html.light .bg-mesh-gradient {
-        background: radial-gradient(at 20% 20%, #dbeafe 0px, transparent 50%),
-            radial-gradient(at 80% 80%, #e0f2fe 0px, transparent 50%), #f3f5f8;
+    /* Dot Matrix / Halftone Modal Backdrop Pattern */
+    .brutal-backdrop {
+        background-color: rgba(0, 0, 0, 0.85);
+        background-image: radial-gradient(#FFFFFF 1px, transparent 1px);
+        background-size: 16px 16px;
     }
 
-    html.light .glass-panel {
-        @apply bg-white/90 border-navy-base/15 text-pearl;
-        box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
-    }
-
-    html.light .glass-panel-blur {
-        @apply bg-white/95 border-navy-base/15 text-pearl;
-        box-shadow: 0 8px 32px 0 rgba(31, 41, 55, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
-    }
-
-    html.light .input-debossed {
-        @apply bg-white text-navy-base placeholder-navy-base/40;
-        box-shadow: inset 0 2px 6px rgba(31, 41, 55, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.04);
-    }
-    html.light .input-debossed:focus {
-        box-shadow: inset 0 2px 6px rgba(31, 41, 55, 0.08), inset 0 1px 2px rgba(0, 0, 0, 0.04),
-            0 0 0 2px rgba(14, 165, 180, 0.4);
-    }
-
-    /* Light Mode Overrides for Transparency & Borders */
-    html.light .bg-white\/5 { background-color: rgba(22, 32, 50, 0.04); }
-    html.light .bg-white\/10 { background-color: rgba(22, 32, 50, 0.08); }
-    html.light .bg-white\/15 { background-color: rgba(22, 32, 50, 0.12); }
-    html.light .bg-white\/20 { background-color: rgba(22, 32, 50, 0.16); }
-
-    html.light .hover\:bg-white\/5:hover { background-color: rgba(22, 32, 50, 0.05); }
-    html.light .hover\:bg-white\/10:hover { background-color: rgba(22, 32, 50, 0.08); }
-    html.light .hover\:bg-white\/15:hover { background-color: rgba(22, 32, 50, 0.12); }
-
-    html.light .border-white\/5 { border-color: rgba(22, 32, 50, 0.06); }
-    html.light .border-white\/10 { border-color: rgba(22, 32, 50, 0.12); }
-    html.light .border-white\/15 { border-color: rgba(22, 32, 50, 0.16); }
-    html.light .border-white\/20 { border-color: rgba(22, 32, 50, 0.22); }
-
-    html.light .text-white { color: rgb(22, 32, 50); }
-    html.light .text-white\/40 { color: rgba(22, 32, 50, 0.45); }
-    html.light .text-white\/50 { color: rgba(22, 32, 50, 0.55); }
-    html.light .text-white\/60 { color: rgba(22, 32, 50, 0.65); }
-    html.light .text-white\/70 { color: rgba(22, 32, 50, 0.75); }
-    html.light .text-white\/80 { color: rgba(22, 32, 50, 0.85); }
-
-    /* Light Mode Select Option tags */
-    html.light select option {
-        background-color: #ffffff;
-        color: #162032;
-    }
-
-    /* Light Mode Global Input & Search Placeholder Color (Biru Tua) */
-    html.light input::placeholder,
-    html.light textarea::placeholder,
-    html.light select::placeholder,
-    html.light .input-debossed::placeholder,
-    html.light [placeholder]::placeholder {
-        color: #1e293b !important; /* Biru Tua Slate 800 */
-        opacity: 0.75 !important;
-    }
-
-    html.light input::-webkit-input-placeholder,
-    html.light textarea::-webkit-input-placeholder,
-    html.light .input-debossed::-webkit-input-placeholder,
-    html.light [placeholder]::-webkit-input-placeholder {
-        color: #1e293b !important;
-        opacity: 0.75 !important;
-    }
-
-    html.light input::-moz-placeholder,
-    html.light textarea::-moz-placeholder,
-    html.light .input-debossed::-moz-placeholder,
-    html.light [placeholder]::-moz-placeholder {
-        color: #1e293b !important;
-        opacity: 0.75 !important;
-    }
-
-    html.light ::-webkit-scrollbar-thumb {
-        background: rgba(31, 41, 55, 0.25);
-        border: 2px solid rgba(243, 245, 248, 0.6);
-    }
-    html.light ::-webkit-scrollbar-thumb:hover {
-        background: rgba(31, 41, 55, 0.4);
-    }
-
-    /* Liquid Glass Scrollbar */
+    /* Custom Brutal Scrollbar */
     ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
+        width: 12px;
+        height: 12px;
     }
     ::-webkit-scrollbar-track {
-        background: transparent;
+        background: #EAEAE5;
+        border-left: 2px solid #000000;
     }
     ::-webkit-scrollbar-thumb {
-        @apply bg-white/15 rounded-pill;
-        border: 2px solid rgba(22, 32, 50, 0.6);
+        background: #FFDE00;
+        border: 2px solid #000000;
+        box-shadow: 2px 2px 0px 0px #000000;
     }
     ::-webkit-scrollbar-thumb:hover {
-        @apply bg-white/25;
+        background: #00FF66;
     }
 }
+

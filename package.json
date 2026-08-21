@@ -19,6 +19,7 @@
         "vite": "^6.0.11"
     },
     "dependencies": {
+        "html5-qrcode": "^2.3.8",
         "lucide": "^1.30.0",
         "lucide-static": "^1.30.0"
     }

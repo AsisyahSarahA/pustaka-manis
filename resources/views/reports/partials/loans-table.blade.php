@@ -1,10 +1,12 @@
 <div class="glass-panel overflow-hidden rounded-4xl">
     <div class="flex items-center justify-between p-5">
         <h3 class="font-bold text-pearl">Daftar Peminjaman ({{ $loans->count() }})</h3>
-        @if (!empty($start) && !empty($end))
-            <span class="text-xs text-pearl/40">Periode: {{ \Carbon\Carbon::parse($start)->format('d M Y') }} — {{ \Carbon\Carbon::parse($end)->format('d M Y') }}</span>
+        @if (!empty($period_label))
+            <span class="text-xs text-pearl/50">Periode: {{ $period_label }}</span>
+        @elseif (!empty($start) && !empty($end))
+            <span class="text-xs text-pearl/50">Periode: {{ \Carbon\Carbon::parse($start)->format('d M Y') }} — {{ \Carbon\Carbon::parse($end)->format('d M Y') }}</span>
         @else
-            <span class="text-xs text-pearl/40">Periode: Semua waktu</span>
+            <span class="text-xs text-pearl/50">Periode: Semua waktu</span>
         @endif
     </div>
     <x-table :headers="['No. Transaksi', 'Peminjam', 'Kelas', 'Tanggal', 'Jatuh Tempo', 'Status']">

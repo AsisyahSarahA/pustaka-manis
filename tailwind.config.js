@@ -11,64 +11,88 @@ export default {
     ],
     theme: {
         extend: {
-            fontFamily: {
-                sans: ['Inter', ...defaultTheme.fontFamily.sans],
-                mono: ['JetBrains Mono', ...defaultTheme.fontFamily.mono],
-            },
             colors: {
-                navy: {
-                    base: 'rgb(var(--navy-base) / <alpha-value>)',
-                    soft: 'rgb(var(--navy-soft) / <alpha-value>)',
-                    deep: 'rgb(var(--navy-deep) / <alpha-value>)',
+                paper: '#F4F4F0',
+                ink: '#000000',
+                brutal: {
+                    yellow: '#FFDE00',
+                    neon: '#00FF66',
+                    pink: '#FF003C',
+                    blue: '#0066FF',
+                    bg: '#F4F4F0',
+                    dark: '#121212',
+                    card: '#FFFFFF',
+                    input: '#EAEAE5',
                 },
-                pearl: 'rgb(var(--pearl) / <alpha-value>)',
+                // Retain semantic mappings mapped to neo-brutalist high-contrast colors
+                navy: {
+                    base: '#F4F4F0',
+                    soft: '#FFFFFF',
+                    deep: '#000000',
+                },
+                pearl: '#000000',
                 azure: {
-                    soft: 'rgb(var(--azure-soft) / <alpha-value>)',
-                    light: 'rgb(var(--azure-light) / <alpha-value>)',
-                    glow: 'rgba(151, 221, 233, 0.4)',
+                    soft: '#0066FF',
+                    light: '#00FF66',
+                    glow: '#FFDE00',
                 },
                 amber: {
-                    warm: 'rgb(var(--amber-warm) / <alpha-value>)',
+                    warm: '#FFDE00',
                 },
                 danger: {
-                    red: 'rgb(var(--danger-red) / <alpha-value>)',
-                    soft: 'rgba(248, 113, 113, 0.2)',
+                    red: '#FF003C',
+                    soft: '#FF003C',
                 },
                 success: {
-                    green: 'rgb(var(--azure-soft) / <alpha-value>)',
-                    soft: 'rgba(151, 221, 233, 0.2)',
+                    green: '#00FF66',
+                    soft: '#00FF66',
                 },
             },
+            fontFamily: {
+                sans: ['Inter', ...defaultTheme.fontFamily.sans],
+                heading: ['Space Grotesk', 'Archivo Black', ...defaultTheme.fontFamily.sans],
+                mono: ['JetBrains Mono', 'VT323', ...defaultTheme.fontFamily.mono],
+            },
             borderRadius: {
-                '4xl': '2rem',
-                '5xl': '2.5rem',
-                pill: '9999px',
+                none: '0px',
+                sm: '2px',
+                DEFAULT: '0px',
+                md: '4px',
+                lg: '4px',
+                xl: '4px',
+                '2xl': '4px',
+                '3xl': '4px',
+                '4xl': '0px',
+                '5xl': '0px',
+                pill: '0px',
             },
             boxShadow: {
-                // Liquid Glass Shadow
-                glass: '0 8px 32px 0 rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.1)',
-                // Spatial Floating Shadow
-                spatial: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                // Skeuomorphic Tactile Button (Press effect)
-                tactile:
-                    '0 4px 6px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.2), inset 0 -2px 4px rgba(0,0,0,0.1)',
-                'tactile-pressed':
-                    'inset 0 4px 8px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.1)',
-                // Debossed Input
-                debossed:
-                    'inset 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(0,0,0,0.2)',
+                brutal: '5px 5px 0px 0px #000000',
+                'brutal-sm': '3px 3px 0px 0px #000000',
+                'brutal-lg': '8px 8px 0px 0px #000000',
+                'brutal-xl': '12px 12px 0px 0px #000000',
+                'brutal-press': '0px 0px 0px 0px #000000',
+                'brutal-yellow': '5px 5px 0px 0px #FFDE00',
+                'brutal-neon': '5px 5px 0px 0px #00FF66',
+                'brutal-pink': '5px 5px 0px 0px #FF003C',
+                'brutal-blue': '5px 5px 0px 0px #0066FF',
+                // Keep backward compatibility aliases with brutal hard shadows
+                glass: '5px 5px 0px 0px #000000',
+                spatial: '8px 8px 0px 0px #000000',
+                tactile: '4px 4px 0px 0px #000000',
+                'tactile-pressed': '0px 0px 0px 0px #000000',
+                debossed: 'none',
             },
-            backgroundImage: {
-                'mesh-gradient':
-                    'radial-gradient(at 20% 20%, #2A3B54 0px, transparent 50%), radial-gradient(at 80% 80%, #1A2B42 0px, transparent 50%)',
-                'glass-edge':
-                    'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.05) 100%)',
-            },
-            backdropBlur: {
-                xs: '2px',
-                liquid: '12px',
+            borderWidth: {
+                DEFAULT: '2px',
+                '2': '2px',
+                '3': '3px',
+                '4': '4px',
+                '6': '6px',
+                '8': '8px',
             },
         },
     },
     plugins: [],
 };
+

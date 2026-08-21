@@ -21,8 +21,17 @@ class Book extends Model
         'rack_location',
         'total_stock',
         'available_stock',
+        'cover_image',
         'is_active',
     ];
+
+    public function getCoverUrlAttribute(): ?string
+    {
+        if ($this->cover_image && file_exists(public_path($this->cover_image))) {
+            return asset($this->cover_image);
+        }
+        return null;
+    }
 
     protected function casts(): array
     {
