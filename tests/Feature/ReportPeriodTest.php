@@ -18,7 +18,7 @@ class ReportPeriodTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::first() ?? User::factory()->create();
     }
 
